@@ -10,6 +10,7 @@ set_error_handler('myErrorHandler');
 set_exception_handler('myExceptionHandler');
 
 require_once('./init.php');
+require_once('./parsedown/Parsedown.php');
 
 $db = DBConnection::instance();
 
@@ -521,9 +522,15 @@ elseif(isset($_GET['setHideList']))
 
 function convertText( $s)
 {
-	$s = escapeTags($s);
-	$s = str_replace( " ", "&nbsp", $s);
-	return nl2br( $s);
+	$Parsedown = new Parsedown();
+
+	return $Parsedown->text($s);
+
+//	$s = $Parsedown->text($s);
+//	return nl2br( $s);
+
+//	$s = escapeTags($s);
+//	$s = str_replace( " ", "&nbsp", $s);
 }
 
 function prepareTaskRow($r)
