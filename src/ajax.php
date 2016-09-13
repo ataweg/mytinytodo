@@ -4,7 +4,7 @@
 	This file is part of myTinyTodo.
 	(C) Copyright 2009-2010 Max Pozdeev <maxpozdeev@gmail.com>
 	Licensed under the GNU GPL v2 license. See file COPYRIGHT for details.
-*/ 
+*/
 
 set_error_handler('myErrorHandler');
 set_exception_handler('myExceptionHandler');
@@ -40,7 +40,7 @@ elseif(isset($_GET['loadTasks']))
 	}
 	else $sqlWhere .= " AND {$db->prefix}todolist.list_id=". $listId;
 	if(_get('compl') == 0) $sqlWhere .= ' AND compl=0';
-	
+
 	$tag = trim(_get('t'));
 	if($tag != '')
 	{
@@ -66,7 +66,7 @@ elseif(isset($_GET['loadTasks']))
 			$inner .= "INNER JOIN {$db->prefix}tag2task ON id=task_id";
 			$sqlWhere .= " AND tag_id = ". $tagIds[0];
 		}
-		
+
 		if($tagExIds) {
 			$sqlWhere .= " AND id NOT IN (SELECT DISTINCT task_id FROM {$db->prefix}tag2task WHERE list_id=$listId AND tag_id IN (".
 						implode(',',$tagExIds). "))"; //DISTINCT ?
@@ -217,7 +217,7 @@ elseif(isset($_GET['editNote']))
 	$db->dq("UPDATE {$db->prefix}todolist SET note=?,d_edited=? WHERE id=$id", array($note, time()) );
 	$t = array();
 	$t['total'] = 1;
-	$t['list'][] = array('id'=>$id, 'note'=>nl2br(escapeTags($note)), 'noteText'=>(string)$note);
+	$t['list'][] = array('id'=>$id, 'note'=>convertText($note), 'noteText'=>(string)$note);
 	jsonExit($t);
 }
 elseif(isset($_GET['editTask']))
@@ -317,7 +317,7 @@ elseif(isset($_GET['suggestTags']))
 		$s .= "$r[0]|$r[1]\n";
 	}
 	echo htmlarray($s);
-	exit; 
+	exit;
 }
 elseif(isset($_GET['setPrio']))
 {
@@ -513,11 +513,18 @@ elseif(isset($_GET['setHideList']))
 	$flag = (int)_post('hide');
 	$bitwise = ($flag == 0) ? 'taskview & ~4' : 'taskview | 4';
 	$db->dq("UPDATE {$db->prefix}lists SET taskview=$bitwise WHERE id=$listId");
-	jsonExit(array('total'=>1));	
+	jsonExit(array('total'=>1));
 }
 
 
 ###################################################################################################
+
+function convertText( $s)
+{
+	$s = escapeTags($s);
+	$s = str_replace( " ", "&nbsp", $s);
+	return nl2br( $s);
+}
 
 function prepareTaskRow($r)
 {
@@ -544,7 +551,7 @@ function prepareTaskRow($r)
 		'dateCompletedInlineTitle' => htmlarray(sprintf($lang->get('taskdate_inline_completed'), $dCompleted)),
 		'compl' => (int)$r['compl'],
 		'prio' => $r['prio'],
-		'note' => nl2br(escapeTags($r['note'])),
+		'note' => convertText( $r['note']),
 		'noteText' => (string)$r['note'],
 		'ow' => (int)$r['ow'],
 		'tags' => htmlarray($r['tags']),
@@ -708,9 +715,9 @@ function parse_duedate($s)
 		$d = (int)$ma[1]; $m = (int)$ma[2]; $y = (int)$ma[3];
 	}
 	elseif(preg_match("|^(\d+)\.(\d+)\b|", $s, $ma)) {
-		$d = (int)$ma[1]; $m = (int)$ma[2]; 
+		$d = (int)$ma[1]; $m = (int)$ma[2];
 		$a = explode(',', date('Y,m,d'));
-		if( $m<(int)$a[1] || ($m==(int)$a[1] && $d<(int)$a[2]) ) $y = (int)$a[0]+1; 
+		if( $m<(int)$a[1] || ($m==(int)$a[1] && $d<(int)$a[2]) ) $y = (int)$a[0]+1;
 		else $y = (int)$a[0];
 	}
 	elseif(preg_match("|^(\d+)\/(\d+)\b|", $s, $ma))
@@ -721,7 +728,7 @@ function parse_duedate($s)
 			$m = (int)$ma[1]; $d = (int)$ma[2];
 		}
 		$a = explode(',', date('Y,m,d'));
-		if( $m<(int)$a[1] || ($m==(int)$a[1] && $d<(int)$a[2]) ) $y = (int)$a[0]+1; 
+		if( $m<(int)$a[1] || ($m==(int)$a[1] && $d<(int)$a[2]) ) $y = (int)$a[0]+1;
 		else $y = (int)$a[0];
 	}
 	else return null;
@@ -838,7 +845,7 @@ function moveTask($id, $listId)
 		return false;
 
 	$ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=? AND compl=?", array($listId, $r['compl']?1:0));
-	
+
 	$db->ex("BEGIN");
 	$db->ex("UPDATE {$db->prefix}tag2task SET list_id=? WHERE task_id=?", array($listId, $id));
 	$db->dq("UPDATE {$db->prefix}todolist SET list_id=?, ow=?, d_edited=? WHERE id=?", array($listId, $ow, time(), $id));
