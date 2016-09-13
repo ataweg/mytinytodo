@@ -21,7 +21,7 @@ var tabLists = {
 	_alltasks: {},
 	clear: function(){
 		this._lists = {}; this._length = 0; this._order = [];
-		this._alltasks = { id:-1, showCompl:0, sort:3 }; 
+		this._alltasks = { id:-1, showCompl:0, sort:3 };
 	},
 	length: function(){ return this._length; },
 	exists: function(id){ if(this._lists[id] || id==-1) return true; else return false; },
@@ -73,7 +73,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			if(this.__lang[v]) return this.__lang[v];
 			else return v;
 		},
-		
+
 		init: function(lang)
 		{
 			this.__lang = lang;
@@ -84,7 +84,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 		}
 	},
 
-	pages: { 
+	pages: {
 		current: { page:'tasks', pageClass:'' },
 		prev: []
 	},
@@ -122,7 +122,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			submitNewTask(this);
 			return false;
 		});
-		
+
 		$('#newtask_submit').click(function(){
 			$('#newtask_form').submit();
 		});
@@ -131,7 +131,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			showEditForm(1);
 			return false;
 		});
-		
+
 		$('#task').keydown(function(event){
 			if(event.keyCode == 27) {
 				$(this).val('');
@@ -173,7 +173,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 					liveSearchToggle(0);
 				}
 				return false; //need to return false in firefox (for AJAX?)
-			}		
+			}
 		}).focusin(function(){
 			$('#toolbar').addClass('mtt-insearch');
 			$(this).focus();
@@ -187,7 +187,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			_mtt.menus.taskview.show(this);
 		});
 
-		$('#mtt_filters .tag-filter .mtt-filter-close').live('click', function(){
+		$('#mtt_filters').on('click', '.tag-filter .mtt-filter-close', function(){
 			cancelTagFilter($(this).attr('tagid'));
 		});
 
@@ -208,11 +208,11 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			if(_mtt.menus.tagcloud) _mtt.menus.tagcloud.close();
 		});
 
-		$('#tagcloudcontent .tag').live('click', function(){
+		$('#tagcloudcontent').on('click', '.tag', function(){
 			addFilterTag($(this).attr('tag'), $(this).attr('tagid'));
 			if(_mtt.menus.tagcloud) _mtt.menus.tagcloud.close();
 			return false;
-		});	
+		});
 
 		$('#mtt-notes-show').click(function(){
 			toggleAllNotes(1);
@@ -233,9 +233,9 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			else if(this.id == 'view_soon') setTaskview('soon');
 		});
 
-		
+
 		// Tabs
-		$('#lists li.mtt-tab').live('click', function(event){
+		$('#lists').on('click', 'li.mtt-tab', function(event){
 			if(event.metaKey || event.ctrlKey) {
 				// hide the tab
 				hideTab(this);
@@ -244,7 +244,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			tabSelect(this);
 			return false;
 		});
-		
+
 		$('#list_all').click(function(event){
 			if(event.metaKey || event.ctrlKey) {
 				// hide the tab
@@ -255,11 +255,11 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			return false;
 		});
 
-		$('#lists li.mtt-tab .list-action').live('click', function(){
+		$('#lists').on('click', 'li.mtt-tab .list-action', function(){
 			listMenu(this);
 			return false;	//stop bubble to tab click
 		});
-		
+
 		$('#list_all .list-action').click(function(event){
 			listMenu(this);
 			return false;	//stop bubble to tab click
@@ -302,11 +302,11 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			return saveTask(this);
 		});
 
-		$('#alltags .tag').live('click', function(){
+		$('#alltags').on('click', '.tag', function(){
 			addEditTag($(this).attr('tag'));
 			return false;
 		});
-		
+
 		$("#duedate").datepicker({
 			dateFormat: _mtt.duedatepickerformat(),
 			firstDay: _mtt.options.firstdayofweek,
@@ -325,12 +325,12 @@ var mytinytodo = window.mytinytodo = _mtt = {
 
 		// tasklist handlers
 		$("#tasklist").bind("click", tasklistClick);
-		
-		$('#tasklist li').live('dblclick', function(){
+
+		$('#tasklist').on('dblclick', 'li', function(){
 			//clear selection
 			if(document.selection && document.selection.empty && document.selection.createRange().text) document.selection.empty();
 			else if(window.getSelection) window.getSelection().removeAllRanges();
-			
+
 			var li = findParentNode(this, 'LI');
 			if(li && li.id) {
 				var id = li.id.split('_',2)[1];
@@ -338,25 +338,25 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			}
 		});
 
-		$('#tasklist .taskactionbtn').live('click', function(){
+		$('#tasklist').on('click', '.taskactionbtn', function(){
 			var id = parseInt(getLiTaskId(this));
 			if(id) taskContextMenu(this, id);
 			return false;
 		});
 
-		$('#tasklist input[type=checkbox]').live('click', function(){
+		$('#tasklist').on('click', 'input[type=checkbox]', function(){
 			var id = parseInt(getLiTaskId(this));
 			if(id) completeTask(id, this);
 			//return false;
 		});
 
-		$('#tasklist .task-toggle').live('click', function(){
+		$('#tasklist').on('click', '.task-toggle', function(){
 			var id = getLiTaskId(this);
 			if(id) $('#taskrow_'+id).toggleClass('task-expanded');
 			return false;
 		});
 
-		$('#tasklist .tag').live('click', function(event){
+		$('#tasklist').on('click', '.tag', function(event){
 			clearTimeout(_mtt.timers.previewtag);
 			$('#tasklist li').removeClass('not-in-tagpreview');
 			addFilterTag($(this).attr('tag'), $(this).attr('tagid'), (event.metaKey || event.ctrlKey ? true : false) );
@@ -364,7 +364,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 		});
 
 		if(!this.options.touchDevice) {
-			$('#tasklist .task-prio').live('mouseover mouseout', function(event){
+			$('#tasklist').on('mouseover mouseout', '.task-prio', function(event){
 				var id = parseInt(getLiTaskId(this));
 				if(!id) return;
 				if(event.type == 'mouseover') prioPopup(1, this, id);
@@ -372,20 +372,20 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			});
 		}
 
-		$('#tasklist .mtt-action-note-cancel').live('click', function(){
+		$('#tasklist').on('click', '.mtt-action-note-cancel', function(){
 			var id = parseInt(getLiTaskId(this));
 			if(id) cancelTaskNote(id);
 			return false;
 		});
 
-		$('#tasklist .mtt-action-note-save').live('click', function(){
+		$('#tasklist').on('click', '.mtt-action-note-save', function(){
 			var id = parseInt(getLiTaskId(this));
 			if(id) saveTaskNote(id);
 			return false;
 		});
 
 		if(this.options.tagPreview) {
-			$('#tasklist .tag').live('mouseover mouseout', function(event){
+			$('#tasklist').on('mouseover mouseout', '.tag', function(event){
 				var cl = 'tag-id-' + $(this).attr('tagid');
 				var sel = (event.metaKey || event.ctrlKey) ? 'li.'+cl : 'li:not(.'+cl+')';
 				if(event.type == 'mouseover') {
@@ -400,11 +400,11 @@ var mytinytodo = window.mytinytodo = _mtt = {
 
 		$("#tasklist").sortable({
 				items:'> :not(.task-completed)', cancel:'span,input,a,textarea',
-		 		delay:150, start:sortStart, update:orderChanged, 
+		 		delay:150, start:sortStart, update:orderChanged,
 				placeholder:'mtt-task-placeholder'
 		});
 
-		$("#lists ul").sortable({delay:150, update:listOrderChanged}); 
+		$("#lists ul").sortable({delay:150, update:listOrderChanged});
 		this.applySingletab();
 
 
@@ -423,8 +423,8 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			if(request.status == 0) errtxt = 'Bad connection';
 			else if(request.status != 200) errtxt = 'HTTP: '+request.status+'/'+request.statusText;
 			else errtxt = request.responseText;
-			flashError(_mtt.lang.get('error'), errtxt); 
-		}); 
+			flashError(_mtt.lang.get('error'), errtxt);
+		});
 
 
 		// Error Message details
@@ -452,12 +452,12 @@ var mytinytodo = window.mytinytodo = _mtt = {
 
 		// Settings
 		$("#settings").click(showSettings);
-		$("#settings_form").live('submit', function() {
+		$( document).on('submit', '#settings_form', function() {
 			saveSettings(this);
 			return false;
 		});
-		
-		$(".mtt-back-button").live('click', function(){ _mtt.pageBack(); this.blur(); return false; } );
+
+		$( document).on('click', ".mtt-back-button", function(){ _mtt.pageBack(); this.blur(); return false; } );
 
 		$(window).bind('beforeunload', function() {
 			if(_mtt.pages.current.page == 'taskedit' && flag.editFormChanged) {
@@ -519,9 +519,9 @@ var mytinytodo = window.mytinytodo = _mtt = {
 		}
 		$('#page_tasks').hide();
 		$('#tasklist').html('');
-		
+
 		tabLists.clear();
-		
+
 		this.db.loadLists(null, function(res)
 		{
 			var ti = '';
@@ -541,13 +541,13 @@ var mytinytodo = window.mytinytodo = _mtt = {
 						break;
 					}
 				}
-				
+
 				// open all tasks tab
 				if(_mtt.options.openList == -1) openListId = -1;
-				
+
 				// or open first if all list are hidden
 				if(!openListId) openListId = res.list[0].id;
-				
+
 				$.each(res.list, function(i,item){
 					tabLists.add(item);
 					ti += '<li id="list_'+item.id+'" class="mtt-tab'+(item.hidden?' mtt-tabs-hidden':'')+'">'+
@@ -555,7 +555,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 						'<div class="list-action"></div></a></li>';
 				});
 			}
-			
+
 			if(openListId) {
 				$('#mtt_body').removeClass('no-lists');
 				$('.mtt-need-list').removeClass('mtt-item-disabled');
@@ -582,7 +582,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 	duedatepickerformat: function()
 	{
 		if(!this.options.duedatepickerformat) return 'yy-mm-dd';
-	
+
 		var s = this.options.duedatepickerformat.replace(/(.)/g, function(t,s) {
 			switch(t) {
 				case 'Y': return 'yy';
@@ -606,7 +606,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 	{
 		flashError(this.lang.get('denied'));
 	},
-	
+
 	pageSet: function(page, pageClass)
 	{
 		var prev = this.pages.current;
@@ -615,7 +615,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 		this.pages.current = {page:page, pageClass:pageClass};
 		showhide($('#page_'+ this.pages.current.page).addClass('mtt-page-'+ this.pages.current.pageClass), $('#page_'+ prev.page));
 	},
-	
+
 	pageBack: function()
 	{
 		if(this.pages.current.page == 'tasks') return false;
@@ -624,12 +624,12 @@ var mytinytodo = window.mytinytodo = _mtt = {
 		showhide($('#page_'+ this.pages.current.page), $('#page_'+ prev.page).removeClass('mtt-page-'+prev.page.pageClass));
 		$(window).scrollTop(this.pages.current.lastScrollTop);
 	},
-	
+
 	applySingletab: function(yesno)
 	{
 		if(yesno == null) yesno = this.options.singletab;
 		else this.options.singletab = yesno;
-		
+
 		if(yesno) {
 			$('#lists .mtt-tabs').addClass('mtt-tabs-only-one');
 			$("#lists ul").sortable('disable');
@@ -639,7 +639,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			$("#lists ul").sortable('enable');
 		}
 	},
-	
+
 	filter: {
 		_filters: [],
 		clear: function() {
@@ -680,7 +680,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			return a.join(', ');
 		}
 	},
-	
+
 	parseAnchor: function()
 	{
 		if(location.hash == '') return false;
@@ -688,7 +688,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 		var a = h.split("/");
 		var p = {};
 		var s = '';
-		
+
 		for(var i=0; i<a.length; i++)
 		{
 			s = a[i];
@@ -699,7 +699,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 		}
 
 		if(p.list) this.options.openList = p.list;
-		
+
 		return p;
 	}
 
@@ -735,7 +735,7 @@ function renameCurList()
 		if(!parseInt(json.total)) return;
 		var item = json.list[0];
 		curList = item;
-		tabLists.replace(item); 
+		tabLists.replace(item);
 		$('#lists ul>.mtt-tabs-selected>a').attr('title', item.name).find('span').html(item.name);
 		mytinytodo.doAction('listRenamed', item);
 	});
@@ -895,7 +895,7 @@ function submitNewTask(form)
 		changeTaskOrder(item.id);
 		$('#taskrow_'+item.id).effect("highlight", {color:_mtt.theme.newTaskFlashColor}, 2000);
 		refreshTaskCnt();
-	}); 
+	});
 	flag.tagsChanged = true;
 	return false;
 };
@@ -907,7 +907,7 @@ function changeTaskOrder(id)
 	if(taskOrder.length < 2) return;
 	var oldOrder = taskOrder.slice();
 	// sortByHand
-	if(curList.sort == 0) taskOrder.sort( function(a,b){ 
+	if(curList.sort == 0) taskOrder.sort( function(a,b){
 			if(taskList[a].compl != taskList[b].compl) return taskList[a].compl-taskList[b].compl;
 			return taskList[a].ow-taskList[b].ow
 		});
@@ -916,57 +916,57 @@ function changeTaskOrder(id)
 			if(taskList[a].compl != taskList[b].compl) return taskList[a].compl-taskList[b].compl;
 			if(taskList[a].prio != taskList[b].prio) return taskList[b].prio-taskList[a].prio;
 			if(taskList[a].dueInt != taskList[b].dueInt) return taskList[a].dueInt-taskList[b].dueInt;
-			return taskList[a].ow-taskList[b].ow; 
+			return taskList[a].ow-taskList[b].ow;
 		});
 	// sortByPrio (reverse)
 	else if(curList.sort == 101) taskOrder.sort( function(a,b){
 			if(taskList[a].compl != taskList[b].compl) return taskList[a].compl-taskList[b].compl;
 			if(taskList[a].prio != taskList[b].prio) return taskList[a].prio-taskList[b].prio;
 			if(taskList[a].dueInt != taskList[b].dueInt) return taskList[b].dueInt-taskList[a].dueInt;
-			return taskList[b].ow-taskList[a].ow; 
-		});		
+			return taskList[b].ow-taskList[a].ow;
+		});
 	// sortByDueDate
 	else if(curList.sort == 2) taskOrder.sort( function(a,b){
 			if(taskList[a].compl != taskList[b].compl) return taskList[a].compl-taskList[b].compl;
 			if(taskList[a].dueInt != taskList[b].dueInt) return taskList[a].dueInt-taskList[b].dueInt;
 			if(taskList[a].prio != taskList[b].prio) return taskList[b].prio-taskList[a].prio;
-			return taskList[a].ow-taskList[b].ow; 
+			return taskList[a].ow-taskList[b].ow;
 		});
 	// sortByDueDate (reverse)
 	else if(curList.sort == 102) taskOrder.sort( function(a,b){
 			if(taskList[a].compl != taskList[b].compl) return taskList[a].compl-taskList[b].compl;
 			if(taskList[a].dueInt != taskList[b].dueInt) return taskList[b].dueInt-taskList[a].dueInt;
 			if(taskList[a].prio != taskList[b].prio) return taskList[a].prio-taskList[b].prio;
-			return taskList[b].ow-taskList[a].ow; 
-		});		
+			return taskList[b].ow-taskList[a].ow;
+		});
 	// sortByDateCreated
 	else if(curList.sort == 3) taskOrder.sort( function(a,b){
 			if(taskList[a].compl != taskList[b].compl) return taskList[a].compl-taskList[b].compl;
 			if(taskList[a].dateInt != taskList[b].dateInt) return taskList[a].dateInt-taskList[b].dateInt;
 			if(taskList[a].prio != taskList[b].prio) return taskList[b].prio-taskList[a].prio;
-			return taskList[a].ow-taskList[b].ow; 
+			return taskList[a].ow-taskList[b].ow;
 		});
 	// sortByDateCreated (reverse)
 	else if(curList.sort == 103) taskOrder.sort( function(a,b){
 			if(taskList[a].compl != taskList[b].compl) return taskList[a].compl-taskList[b].compl;
 			if(taskList[a].dateInt != taskList[b].dateInt) return taskList[b].dateInt-taskList[a].dateInt;
 			if(taskList[a].prio != taskList[b].prio) return taskList[a].prio-taskList[b].prio;
-			return taskList[b].ow-taskList[a].ow; 
+			return taskList[b].ow-taskList[a].ow;
 		});
 	// sortByDateModified
 	else if(curList.sort == 4) taskOrder.sort( function(a,b){
 			if(taskList[a].compl != taskList[b].compl) return taskList[a].compl-taskList[b].compl;
 			if(taskList[a].dateEditedInt != taskList[b].dateEditedInt) return taskList[a].dateEditedInt-taskList[b].dateEditedInt;
 			if(taskList[a].prio != taskList[b].prio) return taskList[b].prio-taskList[a].prio;
-			return taskList[a].ow-taskList[b].ow; 
+			return taskList[a].ow-taskList[b].ow;
 		});
 	// sortByDateModified (reverse)
 	else if(curList.sort == 104) taskOrder.sort( function(a,b){
 			if(taskList[a].compl != taskList[b].compl) return taskList[a].compl-taskList[b].compl;
 			if(taskList[a].dateEditedInt != taskList[b].dateEditedInt) return taskList[b].dateEditedInt-taskList[a].dateEditedInt;
 			if(taskList[a].prio != taskList[b].prio) return taskList[a].prio-taskList[b].prio;
-			return taskList[b].ow-taskList[a].ow; 
-		});		
+			return taskList[b].ow-taskList[a].ow;
+		});
 	else return;
 	if(oldOrder.toString() == taskOrder.toString()) return;
 	if(id && taskList[id])
@@ -1033,7 +1033,7 @@ function setSort(v, init)
 	curList.sort = v;
 	if(v == 0 && !flag.readOnly) $("#tasklist").sortable('enable');
 	else $("#tasklist").sortable('disable');
-	
+
 	if(!init)
 	{
 		changeTaskOrder();
@@ -1123,7 +1123,7 @@ function tabSelect(elementOrId)
 	if(!tabLists.exists(id)) return;
 	$('#lists .mtt-tabs-selected').removeClass('mtt-tabs-selected');
 	$('#list_all').removeClass('mtt-tabs-selected');
-	
+
 	if(id == -1) {
 		$('#list_all').addClass('mtt-tabs-selected').removeClass('mtt-tabs-hidden');
 		$('#listmenucontainer .mtt-need-real-list').addClass('mtt-item-hidden');
@@ -1132,7 +1132,7 @@ function tabSelect(elementOrId)
 		$('#list_'+id).addClass('mtt-tabs-selected').removeClass('mtt-tabs-hidden');
 		$('#listmenucontainer .mtt-need-real-list').removeClass('mtt-item-hidden');
 	}
-	
+
 	if(curList.id != id)
 	{
 		if(id == -1) $('#mtt_body').addClass('show-all-tasks');
@@ -1217,8 +1217,8 @@ function completeTask(id, ch)
 		}
 		else if(curList.showCompl) {
 			$('#taskrow_'+item.id).replaceWith(prepareTaskStr(taskList[id]));
-			$('#taskrow_'+id).fadeOut('fast', function(){	
-				changeTaskOrder(id);				
+			$('#taskrow_'+id).fadeOut('fast', function(){
+				changeTaskOrder(id);
 				$(this).effect("highlight", {color:_mtt.theme.editTaskFlashColor}, 'normal', function(){$(this).css('display','')});
 			});
 		}
@@ -1374,7 +1374,7 @@ function toggleEditAllTags(show)
 function fillEditAllTags()
 {
 	var a = [];
-	for(var i=tagsList.length-1; i>=0; i--) { 
+	for(var i=tagsList.length-1; i>=0; i--) {
 		a.push('<a href="#" class="tag" tag="'+tagsList[i].tag+'">'+tagsList[i].tag+'</a>');
 	}
 	$('#alltags .tags-list').html(a.join(', '));
@@ -1384,7 +1384,7 @@ function fillEditAllTags()
 function addEditTag(tag)
 {
 	var v = $('#edittags').val();
-	if(v == '') { 
+	if(v == '') {
 		$('#edittags').val(tag);
 		return;
 	}
@@ -1436,7 +1436,7 @@ function liveSearchToggle(toSearch, dontLoad)
 			$('#search_close').hide();
 			if(!dontLoad) loadTasks();
 		}
-		
+
 		$('#search').blur();
 	}
 };
@@ -1586,7 +1586,7 @@ function mttMenu(container, options)
 
 				if(!submenu || menu.curSubmenu == submenu && menu.curSubmenu.menuOpen)
 					return;
-			
+
 				menu.showTimer = setTimeout(function(){
 					menu.curSubmenu = submenu;
 					submenu.showSub();
@@ -1641,7 +1641,7 @@ function mttMenu(container, options)
 		$(document).triggerHandler('mousedown.mttmenuclose'); //close any other open menu
 		this.caller = caller;
 		var $caller = $(caller);
-		
+
 		// beforeShow trigger
 		if(this.options.beforeShow && this.options.beforeShow.call)
 			this.options.beforeShow();
@@ -1696,7 +1696,7 @@ function taskContextMenu(el, id)
 		beforeShow: function() {
 			$('#cmenupriocontainer li').removeClass('mtt-item-checked');
 			$('#cmenu_prio\\:'+ taskList[_mtt.menus.cmenu.tag].prio).addClass('mtt-item-checked');
-		} 
+		}
 	});
 	_mtt.menus.cmenu.tag = id;
 	_mtt.menus.cmenu.show(el);
@@ -1977,7 +1977,7 @@ function hideTab(listId)
 		if(!id) return;
 		listId = parseInt(id.split('_', 2)[1]);
 	}
-	
+
 	if(!tabLists.get(listId)) return false;
 
 	// if we hide current tab
@@ -2000,14 +2000,14 @@ function hideTab(listId)
 	else {
 		$('#list_'+listId).addClass('mtt-tabs-hidden').removeClass('mtt-tabs-selected');
 	}
-	
+
 	tabLists.get(listId).hidden = true;
-	
+
 	if(listId > 0) {
 		_mtt.db.request('setHideList', {list:listId, hide:1});
 		_mtt.doAction('listHidden', tabLists.get(listId));
 	}
-	
+
 	if(listIdToSelect) {
 		tabSelect(listIdToSelect);
 	}
@@ -2125,7 +2125,7 @@ function logout()
 		window.location.reload();
 	}, 'json');
 	return false;
-} 
+}
 
 
 /*
@@ -2135,7 +2135,7 @@ function logout()
 function showSettings()
 {
 	if(_mtt.pages.current.page == 'ajax' && _mtt.pages.current.pageClass == 'settings') return false;
-	$('#page_ajax').load(_mtt.mttUrl+'settings.php?ajax=yes',null,function(){ 
+	$('#page_ajax').load(_mtt.mttUrl+'settings.php?ajax=yes',null,function(){
 		//showhide($('#page_ajax').addClass('mtt-page-settings'), $('#page_tasks'));
 		_mtt.pageSet('ajax','settings');
 	})
@@ -2146,7 +2146,7 @@ function saveSettings(frm)
 {
 	if(!frm) return false;
 	var params = { save:'ajax' };
-	$(frm).find("input:text,input:password,input:checked,select").filter(":enabled").each(function() { params[this.name || '__'] = this.value; }); 
+	$(frm).find("input:text,input:password,input:checked,select").filter(":enabled").each(function() { params[this.name || '__'] = this.value; });
 	$(frm).find(":submit").attr('disabled','disabled').blur();
 	$.post(_mtt.mttUrl+'settings.php', params, function(json){
 		if(json.saved) {
@@ -2154,6 +2154,6 @@ function saveSettings(frm)
 			setTimeout('window.location.reload();', 1000);
 		}
 	}, 'json');
-} 
+}
 
 })();

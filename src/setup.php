@@ -44,9 +44,9 @@ else
 	$dbtype = '';
 }
 
-$lastVer = '1.4';
-echo '<html><head><meta name="robots" content="noindex,nofollow"><title>myTinyTodo @VERSION Setup</title></head><body>'; 
-echo "<big><b>myTinyTodo @VERSION Setup</b></big><br><br>";
+$lastVer = '1.5';
+echo '<html><head><meta name="robots" content="noindex,nofollow"><title>myTinyTodo 1.5.0 Setup</title></head><body>'; 
+echo "<big><b>myTinyTodo 1.5.0 Setup</b></big><br><br>";
 
 # determine current installed version
 $ver = get_ver($db, $dbtype);
