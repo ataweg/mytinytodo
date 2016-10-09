@@ -37,10 +37,12 @@ class DefaultLang
 		'advanced_add' => "Advanced",
 		'searching' => "Searching for",
 		'tasks' => "Tasks",
-		'taskdate_inline_created' => "created at %s",
+		'taskdate_inline_created' => "Created at %s",
+		'taskdate_inline_modified' => "Last change at %s",
 		'taskdate_inline_completed' => "Completed at %s",
 		'taskdate_inline_duedate' => "Due %s",
 		'taskdate_created' => "Created",
+		'taskdate_modified' => "Last Change",
 		'taskdate_completed' => "Completed",
 		'go_back' => "&lt;&lt; Back",
 		'edit_task' => "Edit Task",
@@ -93,7 +95,7 @@ class DefaultLang
 		'list_select' => "Select list",
 		'list_export' => "Export",
 		'list_export_csv' => "CSV",
-		'list_export_ical' => "iCalendar",		
+		'list_export_ical' => "iCalendar",
 		'list_rssfeed' => "RSS Feed",
 		'alltags' => "All tags:",
 		'alltags_show' => "Show all",
@@ -105,6 +107,18 @@ class DefaultLang
 		'feed_modified_tasks' => "Modified tasks",
 		'feed_new_tasks' => "New tasks",
 		'alltasks' => "All tasks",
+		'text_options' => "Options",
+		'text_options_select' => 'Optionen auswählen',
+		'text_opt_markup' => 'Markup',
+		'text_opt_markdown' => "Markdown",
+		'text_opt_markdown_extra' => "Markdown Extra",
+		'text_opt_parsedown' => "ParseDown",
+		'text_opt_parsedown_extra' => "ParseDown Extra",
+		'text_opt_html' => "Html",
+		'text_opt_simple' => "Simple Text",
+		'text_hard_wrap' => "Hard Warp",
+		'text_keep_blanks' => "Keep Blanks",
+		'csv_seperator' => ';',
 
 		/* Settings */
 		'set_header' => "Settings",
@@ -117,7 +131,7 @@ class DefaultLang
 		'set_newpass' => "New password",
 		'set_newpass_descr' => "(leave blank if won't change current password)",
 		'set_smartsyntax' => "Smart syntax",
-		'set_smartsyntax_descr' => "(/priority/ task /tags/)",
+		'set_smartsyntax_descr' => "(+-priority task date #tags)",
 		'set_timezone' => "Time zone",
 		'set_autotag' => "Autotagging",
 		'set_autotag_descr' => "(automatically adds tag of current tag filter to newly created task)",
@@ -189,12 +203,12 @@ class DefaultLang
 
 	public static function instance()
 	{
-        if (!isset(self::$instance)) {
+	if (!isset(self::$instance)) {
 			//$c = __CLASS__;
 			$c = 'Lang';
 			self::$instance = new $c;
-        }
-		return self::$instance;	
+	}
+		return self::$instance;
 	}
 }
 

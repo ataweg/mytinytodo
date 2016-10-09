@@ -33,7 +33,7 @@ function htmlarray_ref(&$a, $exclude=null)
 function stop_gpc(&$arr)
 {
 	if (!is_array($arr)) return 1;
-	
+
 	if (!get_magic_quotes_gpc()) return 1;
 	reset($arr);
 	foreach($arr as $k=>$v)
@@ -46,7 +46,7 @@ function stop_gpc(&$arr)
 }
 function _post($param,$defvalue = '')
 {
-	if(!isset($_POST[$param])) 	{
+	if(!isset($_POST[$param])) {
 		return $defvalue;
 	}
 	else {
@@ -62,7 +62,7 @@ function _get($param,$defvalue = '')
 	else {
 		return $_GET[$param];
 	}
-} 
+}
 
 class Config
 {
@@ -166,7 +166,7 @@ function escapeTags($s)
 	$c1 = chr(1);
 	$c2 = chr(2);
 	$s = preg_replace("~<b>([\s\S]*?)</b>~i", "${c1}b${c2}\$1${c1}/b${c2}", $s);
-	$s = preg_replace("~<i>([\s\S]*?)</i>~i", "${c1}i${c2}\$1${c1}/i${c2}", $s);	
+	$s = preg_replace("~<i>([\s\S]*?)</i>~i", "${c1}i${c2}\$1${c1}/i${c2}", $s);
 	$s = preg_replace("~<u>([\s\S]*?)</u>~i", "${c1}u${c2}\$1${c1}/u${c2}", $s);
 	$s = preg_replace("~<s>([\s\S]*?)</s>~i", "${c1}s${c2}\$1${c1}/s${c2}", $s);
 	$s = str_replace(array($c1, $c2), array('<','>'), htmlspecialchars($s));
@@ -176,12 +176,12 @@ function escapeTags($s)
 /* found in comments on http://www.php.net/manual/en/function.uniqid.php#94959 */
 function generateUUID()
 {
-    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-      mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff),
-      mt_rand(0, 0x0fff) | 0x4000,
-      mt_rand(0, 0x3fff) | 0x8000,
-      mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-    );
+	return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+		mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+		mt_rand(0, 0x0fff) | 0x4000,
+		mt_rand(0, 0x3fff) | 0x8000,
+		mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+	);
 }
 
 class DBConnection
@@ -196,12 +196,12 @@ class DBConnection
 
 	public static function instance()
 	{
-        if (!isset(self::$instance)) {
+		if (!isset(self::$instance)) {
 			//$c = __CLASS__;
 			$c = 'DBConnection';
 			self::$instance = new $c;
-        }
-		return self::$instance;	
+		}
+		return self::$instance;
 	}
 }
 

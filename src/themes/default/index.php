@@ -4,27 +4,26 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title><?php mttinfo('title'); ?></title>
-<link rel="stylesheet" type="text/css" href="<?php mttinfo('template_url'); ?>style.css?v=1.5.0" media="all" />
+<link rel="stylesheet" type="text/css" href="<?php mttinfo('template_url'); ?>style.css?v=2.0.1" media="all" />
 <?php if(Config::get('rtl')): ?>
-<link rel="stylesheet" type="text/css" href="<?php mttinfo('template_url'); ?>style_rtl.css?v=1.5.0" media="all" />
+<link rel="stylesheet" type="text/css" href="<?php mttinfo('template_url'); ?>style_rtl.css?v=2.0.1" media="all" />
 <?php endif; ?>
 <?php if(isset($_GET['pda'])): ?>
 <meta name="viewport" id="viewport" content="width=device-width" />
-<link rel="stylesheet" type="text/css" href="<?php mttinfo('template_url'); ?>pda.css?v=1.5.0" media="all" />
+<link rel="stylesheet" type="text/css" href="<?php mttinfo('template_url'); ?>pda.css?v=2.0.1" media="all" />
 <?php else: ?>
-<link rel="stylesheet" type="text/css" href="<?php mttinfo('template_url'); ?>print.css?v=1.5.0" media="print" />
+<link rel="stylesheet" type="text/css" href="<?php mttinfo('template_url'); ?>print.css?v=2.0.1" media="print" />
 <?php endif; ?>
 </head>
 
 <body>
 
-<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>jquery/jquery-3.1.0.js"></script>
-<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>jquery/jquery-ui-1.12.0/jquery-ui.js"></script>
+<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>jquery/jquery-3.1.0.min.js"></script>
+<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>jquery/jquery-ui-1.12.0/jquery-ui.min.js"></script>
 <script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>jquery/jquery.autocomplete-1.1a.js"></script>
-
-<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>mytinytodo.js?v=1.5.0"></script>
-<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>mytinytodo_lang.php?v=1.5.0"></script>
-<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>mytinytodo_ajax_storage.js?v=1.5.0"></script>
+<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>mytinytodo.js?v=2.0.1"></script>
+<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>mytinytodo_lang.php?v=2.0.1"></script>
+<script type="text/javascript" src="<?php mttinfo('mtt_url'); ?>mytinytodo_ajax_storage.js?v=2.0.1"></script>
 
 <script type="text/javascript">
 $().ready(function(){
@@ -59,7 +58,9 @@ $().ready(function(){
 <div id="container">
 <div id="mtt_body">
 
-<h2><?php mttinfo('title'); ?></h2>
+<div id="mtt_title">
+ <h2><?php mttinfo('title'); ?></h2>
+</div>
 
 <div id="loading"></div>
 
@@ -148,40 +149,64 @@ $().ready(function(){
 
 <h3 class="mtt-inadd"><?php _e('add_task');?></h3>
 <h3 class="mtt-inedit"><?php _e('edit_task');?>
- <div id="taskedit-date" class="mtt-inedit">
-  (<span class="date-created" title="<?php _e('taskdate_created');?>"><span></span></span><span class="date-completed" title="<?php _e('taskdate_completed');?>"> &mdash; <span></span></span>)
- </div>
+<div id="taskedit-date" class="mtt-inedit">
+  (<span class="date-created" title="<?php _e('taskdate_created');?>"><span></span></span>
+   <span class="date-modified" title="<?php _e('taskdate_modified');?>"><span></span></span>
+   <span class="date-completed" title="<?php _e('taskdate_completed');?>"> &mdash; <span></span></span>)
+</div>
 </h3>
 
 <form id="taskedit_form" name="edittask" method="post">
-<input type="hidden" name="isadd" value="0" />
-<input type="hidden" name="id" value="" />
-<div class="form-row form-row-short">
- <span class="h"><?php _e('priority');?></span>
- <select name="prio">
-  <option value="2">+2</option><option value="1">+1</option><option value="0" selected="selected">&plusmn;0</option><option value="-1">&minus;1</option>
- </select>
-</div>
-<div class="form-row form-row-short">
- <span class="h"><?php _e('due');?> </span>
- <input name="duedate" id="duedate" value="" class="in100" title="Y-M-D, M/D/Y, D.M.Y, M/D, D.M" autocomplete="off" />
-</div>
-<div class="form-row-short-end"></div>
-<div class="form-row"><div class="h"><?php _e('task');?></div> <input type="text" name="task" value="" class="in500" maxlength="250" /></div>
-<div class="form-row"><div class="h"><?php _e('note');?></div> <textarea name="note" class="in500"></textarea></div>
-<div class="form-row"><div class="h"><?php _e('tags');?></div>
- <table cellspacing="0" cellpadding="0" width="100%"><tr>
-  <td><input type="text" name="tags" id="edittags" value="" class="in500" maxlength="250" /></td>
-  <td class="alltags-cell">
-   <a href="#" id="alltags_show"><?php _e('alltags_show');?></a>
-   <a href="#" id="alltags_hide" style="display:none"><?php _e('alltags_hide');?></a></td>
- </tr></table>
-</div>
-<div class="form-row" id="alltags" style="display:none;"><?php _e('alltags');?> <span class="tags-list"></span></div>
-<div class="form-row form-bottom-buttons">
- <input type="submit" value="<?php _e('save');?>" />
- <input type="button" id="mtt_edit_cancel" class="mtt-back-button" value="<?php _e('cancel');?>" />
-</div>
+ <input type="hidden" name="isadd" value="0" />
+ <input type="hidden" name="id" value="" />
+ <input type="hidden" name="markup" value="0" />
+ <input type="hidden" name="hard_wrap" value="1" />
+ <input type="hidden" name="keep_blanks" value="1" />
+ <div class="form-row form-row-short">
+  <span class="h"><?php _e('priority');?></span>
+  <select name="prio">
+   <option value="2">+2</option>
+   <option value="1">+1</option>
+   <option value="0" selected="selected">&plusmn;0</option>
+   <option value="-1">&minus;1</option>
+  </select>
+ </div>
+ <div class="form-row form-row-short">
+  <span class="h"><?php _e('due');?> </span>
+  <input name="duedate" id="duedate" value="" class="in100" title="Y-M-D, M/D/Y, D.M.Y, M/D, D.M" autocomplete="off" />
+ </div>
+
+ <div class="form-row form-row-short">
+   <span id="noteoptbtn" class="mtt-menu-button">
+     <span class="h"><?php _e('text_options');?> </span>
+     <span class="arrdown"></span>
+   </span>
+ </div>
+
+ <div class="form-row-short-end"></div>
+ <div class="form-row">
+ 	<div class="h"><?php _e('task');?></div>
+ 	<input type="text" name="task" value="" class="in500" maxlength="250" />
+ </div>
+ <div class="form-row">
+ 	<div class="h"><?php _e('note');?></div>
+ 	<textarea name="note" class="in500"></textarea>
+ </div>
+ <div class="form-row"><div class="h"><?php _e('tags');?></div>
+  <table cellspacing="0" cellpadding="0" width="100%"><tr>
+   <td><input type="text" name="tags" id="edittags" value="" class="in500" maxlength="250" /></td>
+   <td class="alltags-cell">
+    <a href="#" id="alltags_show"><?php _e('alltags_show');?></a>
+    <a href="#" id="alltags_hide" style="display:none"><?php _e('alltags_hide');?></a></td>
+  </tr></table>
+ </div>
+ <div class="form-row" id="alltags" style="display:none;"><?php _e('alltags');?>
+ 	<span class="tags-list"></span>
+ </div>
+ <div class="form-row form-bottom-buttons">
+  <input type="submit" value="<?php _e('save');?>" />
+  <input type="button" id="mtt_edit_cancel" class="mtt-back-button" value="<?php _e('cancel');?>" />
+ </div>
 </form>
 
 </div>  <!-- end of page_taskedit -->
@@ -276,14 +301,29 @@ $().ready(function(){
 </ul>
 </div>
 
+<div id="notemenucontainer" class="mtt-menu-container" style="display:none">
+<ul>
+ <li class="mtt-need-list mtt-need-real-list noteopt-item" id="textOptSimple"><div class="menu-icon"></div><?php _e('text_opt_simple');?> </li>
+ <li class="mtt-need-list noteopt-item" id="textOptMarkdown"><div class="menu-icon"></div><?php _e('text_opt_markdown');?> </li>
+ <li class="mtt-need-list noteopt-item" id="textOptMarkdownExtra"><div class="menu-icon"></div><?php _e('text_opt_markdown_extra');?> </li>
+ <li class="mtt-need-list noteopt-item" id="textOptParsedown"><div class="menu-icon"></div><?php _e('text_opt_parsedown');?> </li>
+ <li class="mtt-need-list noteopt-item" id="textOptParsedownExtra"><div class="menu-icon"></div><?php _e('text_opt_parsedown_extra');?> </li>
+ <li class="mtt-need-list noteopt-item" id="textOptHtml"><div class="menu-icon"></div><?php _e('text_opt_html');?> </li>
+ <li class="mtt-menu-delimiter"></li>
+ <li class="mtt-need-list" id="textHardWrap"><div class="menu-icon"></div><?php _e('text_hard_wrap');?></li>
+ <li class="mtt-need-list" id="textKeepBlanks"><div class="menu-icon"></div><?php _e('text_keep_blanks');?></li>
+</ul>
+</div>
+
 <div id="page_ajax" style="display:none"></div>
 
 </div>
 <div id="space"></div>
 </div>
 
-<div id="footer"><div id="footer_content">Powered by <strong><a href="http://www.mytinytodo.net/">myTinyTodo</a></strong> 1.5.0 </div></div>
+<div id="footer"><div id="footer_content">Powered by <strong><a href="http://www.mytinytodo.net/">myTinyTodo</a></strong> 2.0.1 </div></div>
 
 </div>
 </body>
 </html>
+<!-- r390 -->

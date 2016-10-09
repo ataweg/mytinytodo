@@ -97,7 +97,7 @@ class Database_Sqlite3
 		return $this->_dq($query, $p);
 	}
 
-	/* 
+	/*
 		for resultless queries like INSERT,UPDATE
 	*/
 	function ex($query, $p = NULL)

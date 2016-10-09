@@ -4,7 +4,7 @@
 	myTinyTodo language pack
 	Language: Polish
 	Original name: Polski
-	Author: Tomek Matoga 
+	Author: Tomek Matoga
 	AppVersion: v1.3.4
 	Date: 2010-03-17
 */

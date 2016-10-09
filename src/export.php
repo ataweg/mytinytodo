@@ -3,6 +3,7 @@
 /*
 	This file is part of myTinyTodo.
 	(C) Copyright 2010-2011 Max Pozdeev <maxpozdeev@gmail.com>
+	For modifications and enhancements (C) Copyright 2016 Axel Werner
 	Licensed under the GNU GPL v2 license. See file COPYRIGHT for details.
 */
 
@@ -25,13 +26,13 @@ else $sqlSort .= "ow ASC";
 
 $data = array();
 $q = $db->dq("SELECT *, duedate IS NULL AS ddn FROM {$db->prefix}todolist WHERE list_id=$listId $sqlSort");
-while($r = $q->fetch_assoc($q)) 
+while($r = $q->fetch_assoc($q))
 {
-	$data[] = $r; 
+	$data[] = $r;
 }
 
 $format = _get('format');
-	
+
 if($format == 'ical') printICal($listData, $data);
 else printCSV($listData, $data);
 
@@ -46,15 +47,46 @@ function have_write_access()
 
 function printCSV($listData, $data)
 {
-	$s = /*chr(0xEF).chr(0xBB).chr(0xBF).*/ "Completed,Priority,Task,Notes,Tags,Due,DateCreated,DateCompleted\n";
+	$seperator = Lang::instance()->get('csv_seperator');
+
+	$s = chr(0xEF).chr(0xBB).chr(0xBF).  /* UTF-8 encoded file */
+		            Lang::instance()->get('taskdate_completed').
+		$seperator. Lang::instance()->get('priority').
+		$seperator. Lang::instance()->get('task').
+		$seperator. Lang::instance()->get('tags').
+		$seperator. Lang::instance()->get('due').
+		$seperator. Lang::instance()->get('taskdate_created').
+		$seperator. Lang::instance()->get('taskdate_modified').
+		$seperator. Lang::instance()->get('taskdate_completed').
+		$seperator. Lang::instance()->get('text_opt_markup').
+		$seperator. Lang::instance()->get('text_hard_wrap').
+		$seperator. Lang::instance()->get('text_keep_blanks').
+		$seperator. Lang::instance()->get('note').
+		$seperator. "\n";
+
 	foreach($data as $r)
 	{
-		$s .= ($r['compl']?'1':'0'). ','. $r['prio']. ','. escape_csv($r['title']). ','.
-			escape_csv($r['note']). ','. escape_csv($r['tags']). ','. $r['duedate'].
-			','. date('Y-m-d H:i:s O',$r['d_created']). ','. ($r['d_completed'] ? date('Y-m-d H:i:s O',$r['d_completed']) :''). "\n";
+		$na = str_split( $r['note'], 32000);
+
+		foreach( $na as $n )
+		{
+			$s .= ($r['compl']?'1':'0').
+			$seperator. $r['prio'].
+			$seperator. escape_csv($r['title']).
+			$seperator. escape_csv($r['tags']).
+			$seperator. $r['duedate'].
+			$seperator. date('d.m.Y H:i', $r['d_created']).	  /* 'Y-m-d H:i:s O' */
+			$seperator. date('d.m.Y H:i', $r['d_edited']).	   /* 'Y-m-d H:i:s O' */
+			$seperator. ($r['d_completed'] ? date('d.m.Y H:i', $r['d_completed']) : '').   /* 'Y-m-d H:i:s O' */
+			$seperator. $r['d_markup'].
+			$seperator. $r['d_hard_wrap'].
+			$seperator. $r['d_keep_blanks'].
+			$seperator. escape_csv( $n).
+			$seperator. "\n";
+		}
 	}
 	header('Content-type: text/csv; charset=utf-8');
-	header('Content-disposition: attachment; filename=list_'.$listData['id'].'.csv');
+	header('Content-disposition: attachment; filename="'.$listData['name'].'.csv"');
 	print $s;
 }
 
@@ -85,7 +117,7 @@ function printICal($listData, $data)
 		# Apple's iCal priorities: low-9, medium-5, high-1
 		if($r['prio'] > 0 && isset($mttToIcalPrio[$r['prio']])) $a[] = "PRIORITY:". $mttToIcalPrio[$r['prio']];
 		$a[] = "X-MTT-PRIORITY:". $r['prio'];
-		
+
 		$descr = array();
 		if($r['tags'] != '') $descr[] = Lang::instance()->get('tags'). ": ". str_replace(',', ', ', $r['tags']);
 		if($r['note'] != '') $descr[] = Lang::instance()->get('note'). ": ". $r['note'];
@@ -103,7 +135,7 @@ function printICal($listData, $data)
 	# events
 	foreach($data as $r)
 	{
-		if(!$r['duedate'] || $r['compl']) continue;	# skip tasks completed and without duedate 
+		if(!$r['duedate'] || $r['compl']) continue;	# skip tasks completed and without duedate
 		$a = array();
 		$a[] = "BEGIN:VEVENT";
 		$a[] = "UID:_". $r['uuid'];	# do not duplicate VTODO UID
@@ -124,7 +156,7 @@ function printICal($listData, $data)
 	}
 	$s .= "END:VCALENDAR\r\n";
 	header('Content-type: text/calendar; charset=utf-8');
-	header('Content-disposition: attachment; filename=list_'.$listData['id'].'.ics');
+	header('Content-disposition: attachment; filename="'.$listData['name'].'.ics"');
 	print $s;
 }
 

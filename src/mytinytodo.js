@@ -1,6 +1,7 @@
 /*
 	This file is part of myTinyTodo.
 	(C) Copyright 2009-2010 Max Pozdeev <maxpozdeev@gmail.com>
+	For modifications and enhancements (C) Copyright 2016 Axel Werner
 	Licensed under the GNU GPL v2 license. See file COPYRIGHT for details.
 */
 
@@ -323,6 +324,11 @@ var mytinytodo = window.mytinytodo = _mtt = {
 			flag.editFormChanged = true;
 		});
 
+		$('#noteoptbtn').click(function(){
+			if(!_mtt.menus.noteopt) _mtt.menus.noteopt = new mttMenu('notemenucontainer', {onclick:noteoptMenuClick} );
+			_mtt.menus.noteopt.show(this);
+		});
+
 		// tasklist handlers
 		$("#tasklist").bind("click", tasklistClick);
 
@@ -400,7 +406,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
 
 		$("#tasklist").sortable({
 				items:'> :not(.task-completed)', cancel:'span,input,a,textarea',
-		 		delay:150, start:sortStart, update:orderChanged,
+				delay:150, start:sortStart, update:orderChanged,
 				placeholder:'mtt-task-placeholder'
 		});
 
@@ -813,19 +819,20 @@ function prepareTaskStr(item, noteExp)
 	// &mdash; = &#8212; = —
 	var id = item.id;
 	var prio = item.prio;
+	var font = item.markup != 0 ? '' : " simple_text" ; // for simple text
+
 	return '<li id="taskrow_'+id+'" class="' + (item.compl?'task-completed ':'') + item.dueClass + (item.note!=''?' task-has-note':'') +
 				((curList.showNotes && item.note != '') || noteExp ? ' task-expanded' : '') + prepareTagsClass(item.tags_ids) + '">' +
 		'<div class="task-actions"><a href="#" class="taskactionbtn"></a></div>'+"\n"+
 		'<div class="task-left"><div class="task-toggle"></div>'+
 		'<input type="checkbox" '+(flag.readOnly?'disabled="disabled"':'')+(item.compl?'checked="checked"':'')+'/></div>'+"\n"+
 		'<div class="task-middle"><div class="task-through-right">'+prepareDuedate(item)+
-		'<span class="task-date-completed"><span title="'+item.dateInlineTitle+'">'+item.dateInline+'</span>&#8212;'+
-		'<span title="'+item.dateCompletedInlineTitle+'">'+item.dateCompletedInline+'</span></span></div>'+"\n"+
+		'<span class="task-date-completed"><span title="'+item.dateCompletedInlineTitle+'">'+item.dateCompletedInline+'</span></span></div>'+"\n"+
 		'<div class="task-through">'+preparePrio(prio,id)+'<span class="task-title">'+prepareHtml(item.title)+'</span> '+
 		(curList.id == -1 ? '<span class="task-listname">'+ tabLists.get(item.listId).name +'</span>' : '') +	"\n" +
-		prepareTagsStr(item)+'<span class="task-date">'+item.dateInlineTitle+'</span></div>'+
+		prepareTagsStr(item)+'<span class="task-date">'+item.dateInlineTitle+'</span> <span class="task-date">'+item.dateEditedInlineTitle+'</span></div>'+
 		'<div class="task-note-block">'+
-			'<div id="tasknote'+id+'" class="task-note"><span>'+prepareHtml(item.note)+'</span></div>'+
+			'<div id="tasknote'+id+'" class="markdown'+font+'"><span>'+prepareHtml(item.note)+'</span></div>'+
 			'<div id="tasknotearea'+id+'" class="task-note-area"><textarea id="notetext'+id+'"></textarea>'+
 				'<span class="task-note-actions"><a href="#" class="mtt-action-note-save">'+_mtt.lang.get('actionNoteSave')+
 				'</a> | <a href="#" class="mtt-action-note-cancel">'+_mtt.lang.get('actionNoteCancel')+'</a></span></div>'+
@@ -846,7 +853,7 @@ function preparePrio(prio,id)
 	var cl =''; var v = '';
 	if(prio < 0) { cl = 'prio-neg prio-neg-'+Math.abs(prio); v = '&#8722;'+Math.abs(prio); }	// &#8722; = &minus; = −
 	else if(prio > 0) { cl = 'prio-pos prio-pos-'+prio; v = '+'+prio; }
-	else { cl = 'prio-zero'; v = '&#177;0'; }													// &#177; = &plusmn; = ±
+	else { cl = 'prio-zero'; v = '&#177;0'; }																	// &#177; = &plusmn; = ±
 	return '<span class="task-prio '+cl+'">'+v+'</span>';
 };
 
@@ -1278,9 +1285,23 @@ function editTask(id)
 	form.tags.value = item.tags.split(',').join(', ');
 	form.duedate.value = item.duedate;
 	form.prio.value = item.prio;
+	form.markup.value = item.markup;
+	form.hard_wrap.value = item.hard_wrap;
+	form.keep_blanks.value = item.keep_blanks;
+
 	$('#taskedit-date .date-created>span').text(item.date);
+	$('#taskedit-date .date-modified>span').text(item.dateEdited);
 	if(item.compl) $('#taskedit-date .date-completed').show().find('span').text(item.dateCompleted);
 	else $('#taskedit-date .date-completed').hide();
+
+	setMarkup( parseInt(form.markup.value));
+
+	if(form.hard_wrap.value != 0) $('#textHardWrap').addClass('mtt-item-checked');
+	else $('#textHardWrap').removeClass('mtt-item-checked');
+
+	if(form.keep_blanks.value != 0) $('#textKeepBlanks').addClass('mtt-item-checked');
+	else $('#textKeepBlanks').removeClass('mtt-item-checked');
+
 	toggleEditAllTags(0);
 	showEditForm();
 	return false;
@@ -1294,6 +1315,9 @@ function clearEditForm()
 	form.tags.value = '';
 	form.duedate.value = '';
 	form.prio.value = '0';
+	form.markup.value = '0';
+	form.hard_wrap.value = '1';
+	form.keep_blanks.value = '1';
 	form.id.value = '';
 	toggleEditAllTags(0);
 };
@@ -1314,8 +1338,10 @@ function showEditForm(isAdd)
 				form.task.value = json.title
 				form.tags.value = (form.tags.value != '') ? form.tags.value +', '+ json.tags : json.tags;
 				form.prio.value = json.prio;
+				form.markup.value = json.markup;
+				form.hard_wrap.value = json.hard_wrap;
+				form.keep_blanks.value = json.keep_blanks;
 				$('#task').val('');
-
 			});
 		}
 	}
@@ -1333,9 +1359,9 @@ function saveTask(form)
 	if(flag.readOnly) return false;
 	if(form.isadd.value != 0)
 		return submitFullTask(form);
-
-	_mtt.db.request('editTask', {id:form.id.value, title: form.task.value, note:form.note.value,
-		prio:form.prio.value, tags:form.tags.value, duedate:form.duedate.value},
+	_mtt.db.request('editTask', { id:form.id.value, title: form.task.value,
+						note:form.note.value, prio:form.prio.value, tags:form.tags.value, duedate:form.duedate.value,
+						markup:form.markup.value, hard_wrap:form.hard_wrap.value, keep_blanks:form.keep_blanks.value},
 		function(json){
 			if(!parseInt(json.total)) return;
 			var item = json.list[0];
@@ -1459,7 +1485,9 @@ function submitFullTask(form)
 	if(flag.readOnly) return false;
 
 	_mtt.db.request('fullNewTask', { list:curList.id, tag:_mtt.filter.getTags(), title: form.task.value, note:form.note.value,
-			prio:form.prio.value, tags:form.tags.value, duedate:form.duedate.value }, function(json){
+				prio:form.prio.value, tags:form.tags.value, duedate:form.duedate.value,
+				markup:form.markup.value, hard_wrap:form.hard_wrap.value, keep_blanks:form.keep_blanks.value },
+			function(json){
 		if(!parseInt(json.total)) return;
 		form.task.value = '';
 		var item = json.list[0];
@@ -1861,6 +1889,58 @@ function tasklistClick(e)
 	}
 };
 
+function noteoptMenuClick(el, menu)
+{
+	if(!el.id) return;
+
+	switch(el.id) {
+		case 'textOptSimple':			return setMarkup( 0);
+		case 'textOptMarkdown':			return setMarkup( 1);
+		case 'textOptMarkdownExtra':	return setMarkup( 2);
+		case 'textOptParsedown':		return setMarkup( 3);
+		case 'textOptParsedownExtra':	return setMarkup( 4);
+		case 'textOptHtml':				return setMarkup( 5);
+		case 'textHardWrap':				return toggleHardWrap();
+		case 'textKeepBlanks':			return toggleKeepBlank();
+	}
+};
+
+function setMarkup( v)
+{
+	var form = document.getElementById('taskedit_form');
+	form.markup.value = v;
+
+	$('#notemenucontainer .noteopt-item').removeClass('mtt-item-checked');
+	if(v==0)      $('#textOptSimple').addClass('mtt-item-checked');
+	else if(v==1) $('#textOptMarkdown').addClass('mtt-item-checked');
+	else if(v==2) $('#textOptMarkdownExtra').addClass('mtt-item-checked');
+	else if(v==3) $('#textOptParsedown').addClass('mtt-item-checked');
+	else if(v==4) $('#textOptParsedownExtra').addClass('mtt-item-checked');
+	else if(v==5) $('#textOptHtml').addClass('mtt-item-checked');
+	else return;
+};
+
+function toggleHardWrap()
+{
+	var form = document.getElementById('taskedit_form');
+	var act = form.hard_wrap.value != 0 ? 0 : 1;
+
+	if(act) $('#textHardWrap').addClass('mtt-item-checked');
+	else $('#textHardWrap').removeClass('mtt-item-checked');
+
+	form.hard_wrap.value = act;
+};
+
+function toggleKeepBlank()
+{
+	var form = document.getElementById('taskedit_form');
+	var act = form.keep_blanks.value != 0 ? 0 : 1;
+
+	if(act) $('#textKeepBlanks').addClass('mtt-item-checked');
+	else $('#textKeepBlanks').removeClass('mtt-item-checked');
+
+	form.keep_blanks.value = act;
+};
 
 function showhide(a,b)
 {

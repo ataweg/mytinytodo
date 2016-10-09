@@ -34,7 +34,7 @@ class Lang extends DefaultLang
 		'htab_newtask' => "Nauja užduotis",
 		'htab_search' => "Ieškoti",
 		'btn_add' => "Pridėti",
-		'btn_search' => "Ieškoti", 
+		'btn_search' => "Ieškoti",
 		'advanced_add' => "Išplėstinis",
 		'searching' => "Ieškoma",
 		'tasks' => "Užduotys",

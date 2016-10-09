@@ -3,6 +3,7 @@
 /*
 	This file is part of myTinyTodo.
 	(C) Copyright 2009-2011 Max Pozdeev <maxpozdeev@gmail.com>
+	For modifications and enhancements (C) Copyright 2016 Axel Werner
 	Licensed under the GNU GPL v2 license. See file COPYRIGHT for details.
 */
 
@@ -44,9 +45,9 @@ else
 	$dbtype = '';
 }
 
-$lastVer = '1.5';
-echo '<html><head><meta name="robots" content="noindex,nofollow"><title>myTinyTodo 1.5.0 Setup</title></head><body>';
-echo "<big><b>myTinyTodo 1.5.0 Setup</b></big><br><br>";
+$lastVer = '2.0';
+echo '<html><head><meta name="robots" content="noindex,nofollow"><title>myTinyTodo 2.0.1 Setup</title></head><body>';
+echo "<big><b>myTinyTodo 2.0.1 Setup</b></big><br><br>";
 
 # determine current installed version
 $ver = get_ver($db, $dbtype);
@@ -109,22 +110,24 @@ if(!$ver)
  UNIQUE KEY(`uuid`)
 ) CHARSET=utf8 ");
 
-
 			$db->ex(
 "CREATE TABLE {$db->prefix}todolist (
  `id` INT UNSIGNED NOT NULL auto_increment,
  `uuid` CHAR(36) NOT NULL default '',
  `list_id` INT UNSIGNED NOT NULL default 0,
- `d_created` INT UNSIGNED NOT NULL default 0,   /* time() timestamp */
- `d_completed` INT UNSIGNED NOT NULL default 0, /* time() timestamp */
- `d_edited` INT UNSIGNED NOT NULL default 0,    /* time() timestamp */
+ `d_created` INT UNSIGNED NOT NULL default 0,			/* time() timestamp */
+ `d_completed` INT UNSIGNED NOT NULL default 0,			/* time() timestamp */
+ `d_edited` INT UNSIGNED NOT NULL default 0,			/* time() timestamp */
  `compl` TINYINT UNSIGNED NOT NULL default 0,
  `title` VARCHAR(250) NOT NULL,
  `note` TEXT,
- `prio` TINYINT NOT NULL default 0,			/* priority -,0,+ */
- `ow` INT NOT NULL default 0,				/* order weight */
- `tags` VARCHAR(600) NOT NULL default '',	/* for fast access to task tags */
- `tags_ids` VARCHAR(250) NOT NULL default '', /* no more than 22 tags (x11 chars) */
+ `prio` TINYINT NOT NULL default 0,								/* priority -,0,+ */
+ `d_markup` TINYINT UNSIGNED NOT NULL default 0,		/* 0..4 */
+ `d_hard_wrap` TINYINT UNSIGNED NOT NULL default 0,		/* 0
+ `d_keep_blanks` TINYINT UNSIGNED NOT NULL default 0,		/* 0, 1) */
+ `ow` INT NOT NULL default 0,					/* order weight */
+ `tags` VARCHAR(600) NOT NULL default '',			/* for fast access to task tags */
+ `tags_ids` VARCHAR(250) NOT NULL default '',			/* no more than 22 tags (x11 chars) */
  `duedate` DATE default NULL,
   PRIMARY KEY(`id`),
   KEY(`list_id`),
@@ -187,7 +190,10 @@ if(!$ver)
  compl TINYINT UNSIGNED NOT NULL default 0,
  title VARCHAR(250) NOT NULL,
  note TEXT,
- prio TINYINT NOT NULL default 0,
+ prio TINYINT NOT NULL default 0,				/* priority -,0,+ */
+ d_markup TINYINT UNSIGNED NOT NULL default 0,			/* 0..4 */
+ d_hard_wrap TINYINT UNSIGNED NOT NULL default 1,		/* 0
+ d_keep_blanks TINYINT UNSIGNED NOT NULL default 1,	/* 0, 1) */
  ow INTEGER NOT NULL default 0,
  tags VARCHAR(600) NOT NULL default '',
  tags_ids VARCHAR(250) NOT NULL default '',
@@ -230,7 +236,7 @@ elseif($ver == $lastVer)
 }
 else
 {
-	if(!in_array($ver, array('1.1','1.2','1.3.0','1.3.1'))) {
+	if(!in_array($ver, array('1.1','1.2','1.3.0','1.3.1', '1.4'))) {
 		exitMessage("Can not update. Unsupported database version ($ver).");
 	}
 	if(!isset($_POST['update'])) {
@@ -241,20 +247,27 @@ else
 	}
 
 	# update process
-	if($ver == '1.3.1')
+	if($ver == '1.4')
+	{
+		update_14_15($db, $dbtype);
+	}
+	elseif($ver == '1.3.1')
 	{
 		update_131_14($db, $dbtype);
+		update_14_15($db, $dbtype);
 	}
-	if($ver == '1.3.0')
+	elseif($ver == '1.3.0')
 	{
 		update_130_131($db, $dbtype);
 		update_131_14($db, $dbtype);
+		update_14_15($db, $dbtype);
 	}
-	if($ver == '1.2')
+	elseif($ver == '1.2')
 	{
 		update_12_13($db, $dbtype);
 		update_130_131($db, $dbtype);
 		update_131_14($db, $dbtype);
+		update_14_15($db, $dbtype);
 	}
 	elseif($ver == '1.1')
 	{
@@ -262,6 +275,7 @@ else
 		update_12_13($db, $dbtype);
 		update_130_131($db, $dbtype);
 		update_131_14($db, $dbtype);
+		update_14_15($db, $dbtype);
 	}
 }
 echo "Done<br><br> <b>Attention!</b> Delete this file for security reasons.";
@@ -295,6 +309,12 @@ function get_ver($db, $dbtype)
 		if(!has_field_sqlite($db, $db->prefix.'todolist', 'd_edited')) return $v;
 	}
 	$v = '1.4';
+	if($dbtype == 'mysql') {
+		if(!has_field_mysql($db, $db->prefix.'todolist', 'd_markup')) return $v;
+	} else {
+		if(!has_field_sqlite($db, $db->prefix.'todolist', 'd_markup')) return $v;
+	}
+	$v = '2.0';
 	return $v;
 }
 
@@ -773,5 +793,25 @@ function v14_addTaskTags($taskId, $tagIds, $listId)
 }
 ### end of 1.4 #####
 
+### update v1.4 to v2.0 ##########
+function update_14_20($db, $dbtype)
+{
+	# update  db
+	$db->ex("BEGIN");
+	if($dbtype=='mysql')
+	{
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_markup` TINYINT UNSIGNED NOT NULL default 0");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_hard_wrap` TINYINT UNSIGNED NOT NULL default 0");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_keep_blanks` TINYINT UNSIGNED NOT NULL default 0");
+	}
+	else
+	{
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_markup TINYINT UNSIGNED NOT NULL default 0");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_hard_wrap TINYINT UNSIGNED NOT NULL default 0");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_keep_blanks TINYINT UNSIGNED NOT NULL default 0");
+	}
+	$db->ex("COMMIT");
 
+}
+### end of 2.0 #####
 ?>

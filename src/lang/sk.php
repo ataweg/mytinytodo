@@ -5,7 +5,7 @@
 	Language: Slovak
 	Original name: Slovenčina
 	Author: Ľubomír Molent
-	Author Url: 
+	Author Url:
 	AppVersion: v1.3.6
 	Date: 2010-12-16
 */

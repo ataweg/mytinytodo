@@ -3,6 +3,7 @@
 /*
 	This file is part of myTinyTodo.
 	(C) Copyright 2009-2010 Max Pozdeev <maxpozdeev@gmail.com>
+	For modifications and enhancements (C) Copyright 2016 Axel Werner
 	Licensed under the GNU GPL v2 license. See file COPYRIGHT for details.
 */
 
@@ -10,7 +11,16 @@ set_error_handler('myErrorHandler');
 set_exception_handler('myExceptionHandler');
 
 require_once('./init.php');
+
 require_once('./parsedown/Parsedown.php');
+require_once('./parsedown/extra/ParsedownExtra.php');
+
+// Get Markdown class
+use \Michelf\Markdown;
+use \Michelf\MarkdownExtra;
+require_once('./markdown/Michelf/MarkdownInterface.php');
+require_once('./markdown/Michelf/Markdown.php');
+require_once('./markdown/Michelf/MarkdownExtra.php');
 
 $db = DBConnection::instance();
 
@@ -81,10 +91,10 @@ elseif(isset($_GET['loadTasks']))
 	if($sort == 1) $sqlSort .= "prio DESC, ddn ASC, duedate ASC, ow ASC";		// byPrio
 	elseif($sort == 101) $sqlSort .= "prio ASC, ddn DESC, duedate DESC, ow DESC";	// byPrio (reverse)
 	elseif($sort == 2) $sqlSort .= "ddn ASC, duedate ASC, prio DESC, ow ASC";	// byDueDate
-	elseif($sort == 102) $sqlSort .= "ddn DESC, duedate DESC, prio ASC, ow DESC";// byDueDate (reverse)
-	elseif($sort == 3) $sqlSort .= "d_created ASC, prio DESC, ow ASC";			// byDateCreated
+	elseif($sort == 102) $sqlSort .= "ddn DESC, duedate DESC, prio ASC, ow DESC";	// byDueDate (reverse)
+	elseif($sort == 3) $sqlSort .= "d_created ASC, prio DESC, ow ASC";		// byDateCreated
 	elseif($sort == 103) $sqlSort .= "d_created DESC, prio ASC, ow DESC";		// byDateCreated (reverse)
-	elseif($sort == 4) $sqlSort .= "d_edited ASC, prio DESC, ow ASC";			// byDateModified
+	elseif($sort == 4) $sqlSort .= "d_edited ASC, prio DESC, ow ASC";		// byDateModified
 	elseif($sort == 104) $sqlSort .= "d_edited DESC, prio ASC, ow DESC";		// byDateModified (reverse)
 	else $sqlSort .= "ow ASC";
 
@@ -112,7 +122,11 @@ elseif(isset($_GET['newTask']))
 	$t['total'] = 0;
 	$title = trim(_post('title'));
 	$prio = 0;
+	$markup = 0;
+	$hard_wrap = 1;
+	$keep_blanks = 1;
 	$tags = '';
+	$duedate = NULL;
 	if(Config::get('smartsyntax') != 0)
 	{
 		$a = parse_smartsyntax($title);
@@ -122,6 +136,7 @@ elseif(isset($_GET['newTask']))
 		$title = $a['title'];
 		$prio = $a['prio'];
 		$tags = $a['tags'];
+		$duedate = $a['duedate'];
 	}
 	if($title == '') {
 		jsonExit($t);
@@ -129,8 +144,8 @@ elseif(isset($_GET['newTask']))
 	if(Config::get('autotag')) $tags .= ','._post('tag');
 	$ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=0");
 	$db->ex("BEGIN");
-	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio) VALUES (?,?,?,?,?,?,?)",
-				array(generateUUID(), $listId, $title, time(), time(), $ow, $prio) );
+	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,duedate, d_markup,d_hard_wrap,d_keep_blanks) VALUES (?,?,?,?,?,?,?,?, ?,?,?)",
+				array(generateUUID(), $listId, $title, time(), time(), $ow, $prio, $duedate, $markup,$hard_wrap,$keep_blanks) );
 	$id = $db->last_insert_id();
 	if($tags != '')
 	{
@@ -157,6 +172,9 @@ elseif(isset($_GET['fullNewTask']))
 	if($prio < -1) $prio = -1;
 	elseif($prio > 2) $prio = 2;
 	$duedate = parse_duedate(trim(_post('duedate')));
+	$markup = (int)_post('markup');
+	$hard_wrap = (int)_post('hard_wrap');
+	$keep_blanks = (int)_post('keep_blanks');
 	$t = array();
 	$t['total'] = 0;
 	if($title == '') {
@@ -166,8 +184,8 @@ elseif(isset($_GET['fullNewTask']))
 	if(Config::get('autotag')) $tags .= ','._post('tag');
 	$ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=0");
 	$db->ex("BEGIN");
-	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,note,duedate) VALUES(?,?,?,?,?,?,?,?,?)",
-				array(generateUUID(), $listId, $title, time(), time(), $ow, $prio, $note, $duedate) );
+	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,note,duedate, d_markup,d_hard_wrap,d_keep_blanks) VALUES(?,?,?,?,?,?,?,?,?, ?,?,?)",
+				array(generateUUID(), $listId, $title, time(), time(), $ow, $prio, $note, $duedate, $markup, $hard_wrap, $keep_blanks) );
 	$id = $db->last_insert_id();
 	if($tags != '')
 	{
@@ -198,7 +216,7 @@ elseif(isset($_GET['completeTask']))
 	$id = (int)_post('id');
 	$compl = _post('compl') ? 1 : 0;
 	$listId = (int)$db->sq("SELECT list_id FROM {$db->prefix}todolist WHERE id=$id");
-	if($compl) 	$ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=1");
+	if($compl) $ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=1");
 	else $ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=0");
 	$dateCompleted = $compl ? time() : 0;
 	$db->dq("UPDATE {$db->prefix}todolist SET compl=$compl,ow=$ow,d_completed=?,d_edited=? WHERE id=$id",
@@ -215,10 +233,13 @@ elseif(isset($_GET['editNote']))
 	$id = (int)_post('id');
 	stop_gpc($_POST);
 	$note = str_replace("\r\n", "\n", trim(_post('note')));
+	$markup = (int)_post('markup');
+	$hard_wrap = (int)_post('hard_wrap');
+	$keep_blanks = (int)_post('keep_blanks');
 	$db->dq("UPDATE {$db->prefix}todolist SET note=?,d_edited=? WHERE id=$id", array($note, time()) );
 	$t = array();
 	$t['total'] = 1;
-	$t['list'][] = array('id'=>$id, 'note'=>convertText($note), 'noteText'=>(string)$note);
+	$t['list'][] = array('id'=>$id, 'note'=>convertText($note, $markup, $hard_wrap, $keep_blanks), 'noteText'=>(string)$note);
 	jsonExit($t);
 }
 elseif(isset($_GET['editTask']))
@@ -232,6 +253,9 @@ elseif(isset($_GET['editTask']))
 	if($prio < -1) $prio = -1;
 	elseif($prio > 2) $prio = 2;
 	$duedate = parse_duedate(trim(_post('duedate')));
+	$markup = (int)_post('markup');
+	$hard_wrap = (int)_post('hard_wrap');
+	$keep_blanks = (int)_post('keep_blanks');
 	$t = array();
 	$t['total'] = 0;
 	if($title == '') {
@@ -247,8 +271,8 @@ elseif(isset($_GET['editTask']))
 		$tags_ids = implode(',',$aTags['ids']);
 		addTaskTags($id, $aTags['ids'], $listId);
 	}
-	$db->dq("UPDATE {$db->prefix}todolist SET title=?,note=?,prio=?,tags=?,tags_ids=?,duedate=?,d_edited=? WHERE id=$id",
-			array($title, $note, $prio, $tags, $tags_ids, $duedate, time()) );
+	$db->dq("UPDATE {$db->prefix}todolist SET title=?,note=?,prio=?,tags=?,tags_ids=?,duedate=?,d_edited=?, d_markup=?,d_hard_wrap=?,d_keep_blanks=? WHERE id=$id",
+			array($title, $note, $prio, $tags, $tags_ids, $duedate, time(), $markup, $hard_wrap, $keep_blanks) );
 	$db->ex("COMMIT");
 	$r = $db->sqa("SELECT * FROM {$db->prefix}todolist WHERE id=$id");
 	if($r) {
@@ -474,13 +498,15 @@ elseif(isset($_GET['parseTaskStr']))
 	$t = array(
 		'title' => trim(_post('title')),
 		'prio' => 0,
-		'tags' => ''
+		'tags' => '',
+		'duedate' => NULL
 	);
 	if(Config::get('smartsyntax') != 0 && (false !== $a = parse_smartsyntax($t['title'])))
 	{
 		$t['title'] = $a['title'];
 		$t['prio'] = $a['prio'];
 		$t['tags'] = $a['tags'];
+		$t['duedate'] = $a['duedate'];
 	}
 	jsonExit($t);
 }
@@ -520,28 +546,107 @@ elseif(isset($_GET['setHideList']))
 
 ###################################################################################################
 
-function convertText( $s)
+function convertText( $note, $markup, $hard_wrap, $keep_blanks)
 {
-	$Parsedown = new Parsedown();
+	switch ( $markup)
+	{
+		case 1:
+			$parser = new Markdown;
+			$parser->fn_id_prefix = "post22-";
+			$parser->tab_width = 8;
+			$parser->hard_wrap = $hard_wrap;
+			return $parser->transform($note);
+		case 2:
+			$parser = new MarkdownExtra;
+			$parser->fn_id_prefix = "post22-";
+			$parser->tab_width = 8;
+			$parser->hard_wrap = $hard_wrap;
+			return $parser->transform($note);
+		case 3:
+			$parser = new Parsedown();
+			$note = $parser->text($note);
+			if( $keep_blanks )
+				$note = convertBlanks( $note);
+			if( $hard_wrap )
+				$note = nl2br( $note);
+			return $note;
+		case 3:
+			$parser = new ParsedownExtra();
+			$note = $parser->text($note);
+			if( $keep_blanks )
+				$note = convertBlanks( $note);
+			if( $hard_wrap )
+				$note = nl2br( $note);
+			return $note;
+		case 5:  // html
+			return $note;
+		case 0:
+		default:
+			$note = escapeTags($note);
+			if( $keep_blanks )
+				$note = convertBlanks( $note);
+			if( $hard_wrap )
+				$note = nl2br( $note);
+			return $note;
+	}
+}
 
-	return $Parsedown->text($s);
+function convertBlanks( $note)
+{
+	$found_blank = 0;
+	$found_cr = 0;
+	$ret = '';
 
-//	$s = $Parsedown->text($s);
-//	return nl2br( $s);
+	for ($i = 0, $len = strlen($note); $i < $len; ++$i)
+	{
+		$o = ord($note[$i]);
 
-//	$s = escapeTags($s);
-//	$s = str_replace( " ", "&nbsp", $s);
+		if( ($o == 10 ) || ($o == 13) )
+		{
+			$found_cr = 1;
+			$ret .= $note[$i];
+			continue;
+		}
+
+		if( $found_blank == 0)
+		{
+			if( $note[$i] == ' ' )
+				$found_blank = 1;
+			else
+			{
+				$ret .= $note[$i];
+				$found_cr = 0;
+			}
+		}
+		else
+		{
+			if( $note[$i] == ' ' )
+				$ret .= '&nbsp;';		// for the previous blank
+			else
+			{
+				if( $found_cr == 0)
+					$ret .= ' ';			// for the previous blank
+				else
+					$ret .= '&nbsp;';		// first blank in a new line
+				$ret .= $note[$i];
+				$found_blank = 0;
+				$found_cr = 0;
+			}
+		}
+	}
+	return $ret;
 }
 
 function prepareTaskRow($r)
 {
 	$lang = Lang::instance();
 	$dueA = prepare_duedate($r['duedate']);
-	$formatCreatedInline = $formatCompletedInline = Config::get('dateformatshort');
+	$formatCreatedInline = $formatModifiedInline = $formatCompletedInline = Config::get('dateformatshort');
 	if(date('Y') != date('Y',$r['d_created'])) $formatCreatedInline = Config::get('dateformat2');
 	if($r['d_completed'] && date('Y') != date('Y',$r['d_completed'])) $formatCompletedInline = Config::get('dateformat2');
 
 	$dCreated = timestampToDatetime($r['d_created']);
+	$dModified = timestampToDatetime($r['d_edited']);
 	$dCompleted = $r['d_completed'] ? timestampToDatetime($r['d_completed']) : '';
 
 	return array(
@@ -552,13 +657,19 @@ function prepareTaskRow($r)
 		'dateInt' => (int)$r['d_created'],
 		'dateInline' => htmlarray(formatTime($formatCreatedInline, $r['d_created'])),
 		'dateInlineTitle' => htmlarray(sprintf($lang->get('taskdate_inline_created'), $dCreated)),
+		'dateEdited' => htmlarray($dModified),
 		'dateEditedInt' => (int)$r['d_edited'],
+		'dateEditedInline' => htmlarray(formatTime($formatModifiedInline, $r['d_edited'])),
+		'dateEditedInlineTitle' => htmlarray(sprintf($lang->get('taskdate_inline_modified'), $dModified)),
 		'dateCompleted' => htmlarray($dCompleted),
 		'dateCompletedInline' => $r['d_completed'] ? htmlarray(formatTime($formatCompletedInline, $r['d_completed'])) : '',
 		'dateCompletedInlineTitle' => htmlarray(sprintf($lang->get('taskdate_inline_completed'), $dCompleted)),
 		'compl' => (int)$r['compl'],
 		'prio' => $r['prio'],
-		'note' => convertText( $r['note']),
+		'markup' => $r['d_markup'],
+		'hard_wrap' => $r['d_hard_wrap'],
+		'keep_blanks' => $r['d_keep_blanks'],
+		'note' => convertText( $r['note'], $r['d_markup'], $r['d_hard_wrap'], $r['d_keep_blanks']),
 		'noteText' => (string)$r['note'],
 		'ow' => (int)$r['ow'],
 		'tags' => htmlarray($r['tags']),
@@ -682,10 +793,11 @@ function addTaskTags($taskId, $tagIds, $listId)
 function parse_smartsyntax($title)
 {
 	$a = array();
-	if(!preg_match("|^(/([+-]{0,1}\d+)?/)?(.*?)(\s+/([^/]*)/$)?$|", $title, $m)) return false;
-	$a['prio'] = isset($m[2]) ? (int)$m[2] : 0;
-	$a['title'] = isset($m[3]) ? trim($m[3]) : '';
-	$a['tags'] = isset($m[5]) ? trim($m[5]) : '';
+	if(!preg_match("/^([+-]\d+ +)?(.+?)( +\d{1,2}[\.\-\/]\d{1,2}(?:[\.\-\/]\d{2,4})?)?((?: +[#|@][^ ]+)+)*$/", trim($title), $m)) return false;
+	$a['prio'] = isset($m[1]) ? (int)trim($m[1]) : 0;
+	$a['title'] = isset($m[2]) ? trim($m[2]) : '';
+	$a['duedate'] = isset($m[3]) ? parse_duedate(trim($m[3])) : NULL;
+	$a['tags'] = isset($m[4]) ? preg_replace("/ /", ",", trim(preg_replace("/\s+[#|@]/", " ", $m[4]))) : '';
 	if($a['prio'] < -1) $a['prio'] = -1;
 	elseif($a['prio'] > 2) $a['prio'] = 2;
 	return $a;

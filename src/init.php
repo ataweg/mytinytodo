@@ -2,6 +2,7 @@
 /*
 	This file is part of myTinyTodo.
 	(C) Copyright 2009-2010 Max Pozdeev <maxpozdeev@gmail.com>
+	For modifications and enhancements (C) Copyright 2016 Axel Werner
 	Licensed under the GNU GPL v2 license. See file COPYRIGHT for details.
 */
 
@@ -83,7 +84,7 @@ function is_readonly()
 
 function timestampToDatetime($timestamp)
 {
-	$format = Config::get('dateformat') .' '. (Config::get('clock') == 12 ? 'g:i A' : 'H:i');
+	$format = Config::get('dateformat');
 	return formatTime($format, $timestamp);
 }
 

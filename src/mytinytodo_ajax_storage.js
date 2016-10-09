@@ -1,6 +1,7 @@
 /*
 	This file is a part of myTinyTodo.
 	(C) Copyright 2010 Max Pozdeev <maxpozdeev@gmail.com>
+	For modifications and enhancements (C) Copyright 2016 Axel Werner
 	Licensed under the GNU GPL v2 license. See file COPYRIGHT for details.
 */
 
@@ -10,14 +11,14 @@
 
 var mtt;
 
-function mytinytodoStorageAjax(amtt) 
+function mytinytodoStorageAjax(amtt)
 {
 	this.mtt = mtt = amtt;
 }
 
 window.mytinytodoStorageAjax = mytinytodoStorageAjax;
 
-mytinytodoStorageAjax.prototype = 
+mytinytodoStorageAjax.prototype =
 {
 	/* required method */
 	request:function(action, params, callback)
@@ -59,7 +60,7 @@ mytinytodoStorageAjax.prototype =
 		$.post(this.mtt.mttUrl+'ajax.php?newTask',
 			{ list:params.list, title: params.title, tag:params.tag }, callback, 'json');
 	},
-	
+
 
 	fullNewTask: function(params, callback)
 	{
@@ -72,7 +73,10 @@ mytinytodoStorageAjax.prototype =
 	editTask: function(params, callback)
 	{
 		$.post(this.mtt.mttUrl+'ajax.php?editTask='+params.id,
-			{ id:params.id, title:params.title, note:params.note, prio:params.prio, tags:params.tags, duedate:params.duedate },
+			{ id:params.id, title:params.title,
+				note:params.note, prio:params.prio, tags:params.tags, duedate:params.duedate,
+				markup:params.markup, hard_wrap:params.hard_wrap, keep_blanks:params.keep_blanks
+			},
 			callback, 'json');
 	},
 
@@ -100,7 +104,7 @@ mytinytodoStorageAjax.prototype =
 		$.getJSON(this.mtt.mttUrl+'ajax.php?setPrio='+params.id+'&prio='+params.prio+'&rnd='+Math.random(), callback);
 	},
 
-	
+
 	setSort: function(params, callback)
 	{
 		$.post(this.mtt.mttUrl+'ajax.php?setSort', { list:params.list, sort:params.sort }, callback, 'json');
@@ -129,12 +133,12 @@ mytinytodoStorageAjax.prototype =
 	{
 		$.post(this.mtt.mttUrl+'ajax.php?parseTaskStr', { list:params.list, title:params.title, tag:params.tag }, callback, 'json');
 	},
-	
+
 
 	// Lists
 	addList: function(params, callback)
 	{
-		$.post(this.mtt.mttUrl+'ajax.php?addList', { name:params.name }, callback, 'json'); 
+		$.post(this.mtt.mttUrl+'ajax.php?addList', { name:params.name }, callback, 'json');
 
 	},
 
@@ -152,12 +156,12 @@ mytinytodoStorageAjax.prototype =
 	{
 		$.post(this.mtt.mttUrl+'ajax.php?publishList', { list:params.list, publish:params.publish },  callback, 'json');
 	},
-	
+
 	setShowNotesInList: function(params, callback)
 	{
-	    $.post(this.mtt.mttUrl+'ajax.php?setShowNotesInList', { list:params.list, shownotes:params.shownotes },  callback, 'json');
+		$.post(this.mtt.mttUrl+'ajax.php?setShowNotesInList', { list:params.list, shownotes:params.shownotes },  callback, 'json');
 	},
-	
+
 	setHideList: function(params, callback)
 	{
 		$.post(this.mtt.mttUrl+'ajax.php?setHideList', { list:params.list, hide:params.hide }, callback, 'json');

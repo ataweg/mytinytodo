@@ -22,22 +22,22 @@ if(isset($_POST['save']))
 	$langs = getLangs();
 	Config::$params['lang']['options'] = array_keys($langs);
 	Config::set('lang', _post('lang'));
-	
+
 	// in Demo mode we can set only language by cookies
 	if(defined('MTTDEMO')) {
 		setcookie('lang', Config::get('lang'), 0, url_dir(Config::get('url')=='' ? $_SERVER['REQUEST_URI'] : Config::get('url')));
 		$t['saved'] = 1;
 		jsonExit($t);
 	}
-	
+
 	if(isset($_POST['password']) && $_POST['password'] != '') Config::set('password', $_POST['password']);
 	elseif(!_post('allowpassword')) Config::set('password', '');
 	Config::set('smartsyntax', (int)_post('smartsyntax'));
 	// Do not set invalid timezone
 	try {
-	    $tz = trim(_post('timezone'));
-	    $testTZ = new DateTimeZone($tz); //will throw Exception on invalid timezone
-	    Config::set('timezone', $tz);
+		$tz = trim(_post('timezone'));
+		$testTZ = new DateTimeZone($tz); //will throw Exception on invalid timezone
+		Config::set('timezone', $tz);
 	}
 	catch (Exception $e) {
 	}
@@ -63,31 +63,31 @@ function _c($key)
 
 function getLangs($withContents = 0)
 {
-    if (!$h = opendir(MTTPATH. 'lang')) return false;
-    $a = array();
-    while(false !== ($file = readdir($h)))
+	if (!$h = opendir(MTTPATH. 'lang')) return false;
+	$a = array();
+	while(false !== ($file = readdir($h)))
 	{
 		if(preg_match('/(.+)\.php$/', $file, $m) && $file != 'class.default.php') {
 			$a[$m[1]] = $m[1];
 			if($withContents) {
-			    $a[$m[1]] = getLangDetails(MTTPATH. 'lang'. DIRECTORY_SEPARATOR. $file, $m[1]);
-			    $a[$m[1]]['name'] = $a[$m[1]]['original_name'];
-			    $a[$m[1]]['title'] = $a[$m[1]]['language'];
+				$a[$m[1]] = getLangDetails(MTTPATH. 'lang'. DIRECTORY_SEPARATOR. $file, $m[1]);
+				$a[$m[1]]['name'] = $a[$m[1]]['original_name'];
+				$a[$m[1]]['title'] = $a[$m[1]]['language'];
 			}
 		}
-    }
-    closedir($h);
-    return $a;
+	}
+	closedir($h);
+	return $a;
 }
 
 function getLangDetails($filename, $default)
 {
-    $contents = file_get_contents($filename);
-    $a = array('language'=>$default, 'original_name'=>$default);
-    if(preg_match("|/\\*\s*myTinyTodo language pack([\s\S]+?)\\*/|", $contents, $m))
+	$contents = file_get_contents($filename);
+	$a = array('language'=>$default, 'original_name'=>$default);
+	if(preg_match("|/\\*\s*myTinyTodo language pack([\s\S]+?)\\*/|", $contents, $m))
 	{
-	    $str = $m[1];
-	 	if(preg_match("|Language\s*:\s*(.+)|i", $str, $m)) {
+		$str = $m[1];
+		if(preg_match("|Language\s*:\s*(.+)|i", $str, $m)) {
 			$a['language'] = trim($m[1]);
 		}
 		if(preg_match("|Original name\s*:\s*(.+)|i", $str, $m)) {
@@ -109,9 +109,9 @@ function selectOptions($a, $value, $default=null)
 }
 
 /*
-    @param array $a             array of id=>array(name, optional title)
-    @param mixed $key           Key of OPTION to be selected
-    @param mixed $default       Default key if $key is not present in $a
+	@param array $a		array of id=>array(name, optional title)
+	@param mixed $key	Key of OPTION to be selected
+	@param mixed $default	Default key if $key is not present in $a
 */
 function selectOptionsA($a, $key, $default=null)
 {
@@ -120,20 +120,20 @@ function selectOptionsA($a, $key, $default=null)
 	if($default !== null && !isset($a[$key])) $key = $default;
 	foreach($a as $k=>$v) {
 		$s .= '<option value="'.htmlspecialchars($k).'" '.($k===$key?'selected="selected"':'').
-		    (isset($v['title']) ? ' title="'.htmlspecialchars($v['title']).'"' : '').
-		    '>'.htmlspecialchars($v['name']).'</option>';
+			(isset($v['title']) ? ' title="'.htmlspecialchars($v['title']).'"' : '').
+			'>'.htmlspecialchars($v['name']).'</option>';
 	}
 	return $s;
 }
 
 function timezoneIdentifiers()
 {
-    $zones = DateTimeZone::listIdentifiers();
-    $a = array();
-    foreach($zones as $v) {
-        $a[$v] = $v;
-    }
-    return $a;
+	$zones = DateTimeZone::listIdentifiers();
+	$a = array();
+	foreach($zones as $v) {
+	$a[$v] = $v;
+	}
+	return $a;
 }
 
 header('Content-type:text/html; charset=utf-8');
@@ -220,9 +220,9 @@ header('Content-type:text/html; charset=utf-8');
  <input name="dateformat2" value="<?php echo htmlspecialchars(_c('dateformat2'));?>" />
  <select onchange="if(this.value!=0) this.form.dateformat2.value=this.value;">
  <?php echo selectOptions(array('Y-m-d'=>'yyyy-mm-dd ('.date('Y-m-d').')',
-       'n/j/y'=>'m/d/yy ('.date('n/j/y').')',
-       'd.m.y'=>'dd.mm.yy ('.date('d.m.y').')',
-       'd/m/y'=>'dd/mm/yy ('.date('d/m/y').')', 0=>__('set_custom')), _c('dateformat2'), 0); ?>
+	'n/j/y'=>'m/d/yy ('.date('n/j/y').')',
+	'd.m.y'=>'dd.mm.yy ('.date('d.m.y').')',
+	'd/m/y'=>'dd/mm/yy ('.date('d/m/y').')', 0=>__('set_custom')), _c('dateformat2'), 0); ?>
  </select>
 </td></tr>
 
