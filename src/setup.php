@@ -249,7 +249,7 @@ else
 	# update process
 	if($ver == '1.4')
 	{
-		update_14_15($db, $dbtype);
+		update_14_20($db, $dbtype);
 	}
 	elseif($ver == '1.3.1')
 	{
@@ -801,14 +801,14 @@ function update_14_20($db, $dbtype)
 	if($dbtype=='mysql')
 	{
 		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_markup` TINYINT UNSIGNED NOT NULL default 0");
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_hard_wrap` TINYINT UNSIGNED NOT NULL default 0");
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_keep_blanks` TINYINT UNSIGNED NOT NULL default 0");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_hard_wrap` TINYINT UNSIGNED NOT NULL default 1");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_keep_blanks` TINYINT UNSIGNED NOT NULL default 1");
 	}
 	else
 	{
 		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_markup TINYINT UNSIGNED NOT NULL default 0");
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_hard_wrap TINYINT UNSIGNED NOT NULL default 0");
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_keep_blanks TINYINT UNSIGNED NOT NULL default 0");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_hard_wrap TINYINT UNSIGNED NOT NULL default 1");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_keep_blanks TINYINT UNSIGNED NOT NULL default 1");
 	}
 	$db->ex("COMMIT");
 
