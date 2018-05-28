@@ -594,7 +594,6 @@ function convertText( $note, $markup, $hard_wrap, $keep_blanks)
 function convertBlanks( $note)
 {
 	$found_blank = 0;
-	$found_cr = 0;
 	$ret = '';
 
 	for ($i = 0, $len = strlen($note); $i < $len; ++$i)
@@ -603,34 +602,25 @@ function convertBlanks( $note)
 
 		if( ($o == 10 ) || ($o == 13) )
 		{
-			$found_cr = 1;
 			$ret .= $note[$i];
+			$found_blank = 0;		// discards previous blank
 			continue;
 		}
 
 		if( $found_blank == 0)
 		{
+			$ret .= $note[$i];
 			if( $note[$i] == ' ' )
 				$found_blank = 1;
-			else
-			{
-				$ret .= $note[$i];
-				$found_cr = 0;
-			}
 		}
 		else
 		{
 			if( $note[$i] == ' ' )
-				$ret .= '&nbsp;';		// for the previous blank
+				$ret .= '&nbsp;';		  //  the previous char was also a blank
 			else
 			{
-				if( $found_cr == 0)
-					$ret .= ' ';			// for the previous blank
-				else
-					$ret .= '&nbsp;';		// first blank in a new line
 				$ret .= $note[$i];
 				$found_blank = 0;
-				$found_cr = 0;
 			}
 		}
 	}
