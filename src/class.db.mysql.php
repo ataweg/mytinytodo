@@ -72,9 +72,11 @@ class Database_Mysql
 
 	function connect($host, $user, $pass, $db)
 	{
-		if(!$this->dbh = @mysqli_connect($host,$user,$pass))
+		$this->dbh = new mysqli($host,$user,$pass);
+
+		if($this->dbh->connect_error)
 		{
-			throw new Exception(mysqli_connect_error());
+			throw new Exception( $this->dbh->connect_error);
 		}
 		if( @!mysqli_select_db($this->dbh, $db) )
 		{

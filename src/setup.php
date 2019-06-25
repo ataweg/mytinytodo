@@ -123,8 +123,8 @@ if(!$ver)
  `note` TEXT,
  `prio` TINYINT NOT NULL default 0,								/* priority -,0,+ */
  `d_markup` TINYINT UNSIGNED NOT NULL default 0,		/* 0..4 */
- `d_hard_wrap` TINYINT UNSIGNED NOT NULL default 0,		/* 0
- `d_keep_blanks` TINYINT UNSIGNED NOT NULL default 0,		/* 0, 1) */
+ `d_hard_wrap` TINYINT UNSIGNED NOT NULL default 0,		/* 0, 1 */
+ `d_keep_blanks` TINYINT UNSIGNED NOT NULL default 0,		/* 0, 1 */
  `ow` INT NOT NULL default 0,					/* order weight */
  `tags` VARCHAR(600) NOT NULL default '',			/* for fast access to task tags */
  `tags_ids` VARCHAR(250) NOT NULL default '',			/* no more than 22 tags (x11 chars) */
@@ -192,8 +192,8 @@ if(!$ver)
  note TEXT,
  prio TINYINT NOT NULL default 0,				/* priority -,0,+ */
  d_markup TINYINT UNSIGNED NOT NULL default 0,			/* 0..4 */
- d_hard_wrap TINYINT UNSIGNED NOT NULL default 1,		/* 0
- d_keep_blanks TINYINT UNSIGNED NOT NULL default 1,	/* 0, 1) */
+ d_hard_wrap TINYINT UNSIGNED NOT NULL default 1,		/* 0, 1 */
+ d_keep_blanks TINYINT UNSIGNED NOT NULL default 1,	/* 0, 1 */
  ow INTEGER NOT NULL default 0,
  tags VARCHAR(600) NOT NULL default '',
  tags_ids VARCHAR(250) NOT NULL default '',
@@ -251,23 +251,20 @@ else
 	{
 		update_14_20($db, $dbtype);
 	}
-	elseif($ver == '1.3.1')
+    if($ver == '1.3.1')
 	{
 		update_131_14($db, $dbtype);
-		update_14_15($db, $dbtype);
 	}
-	elseif($ver == '1.3.0')
+	if($ver == '1.3.0')
 	{
 		update_130_131($db, $dbtype);
 		update_131_14($db, $dbtype);
-		update_14_15($db, $dbtype);
 	}
-	elseif($ver == '1.2')
+	if($ver == '1.2')
 	{
 		update_12_13($db, $dbtype);
 		update_130_131($db, $dbtype);
 		update_131_14($db, $dbtype);
-		update_14_15($db, $dbtype);
 	}
 	elseif($ver == '1.1')
 	{
@@ -275,7 +272,6 @@ else
 		update_12_13($db, $dbtype);
 		update_130_131($db, $dbtype);
 		update_131_14($db, $dbtype);
-		update_14_15($db, $dbtype);
 	}
 }
 echo "Done<br><br> <b>Attention!</b> Delete this file for security reasons.";
