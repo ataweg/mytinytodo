@@ -321,7 +321,7 @@ $().ready(function(){
 <div id="space"></div>
 </div>
 
-<div id="footer"><div id="footer_content">Powered by <strong><a href="http://www.mytinytodo.net/">myTinyTodo</a></strong> 2.0.1 </div></div>
+<div id="footer"><div id="footer_content">Powered by <strong><a href="http://www.mytinytodo.net/">myTinyTodo</a></strong> 2.0.2 </div></div>
 
 </div>
 </body>

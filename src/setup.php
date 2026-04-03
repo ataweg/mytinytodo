@@ -46,8 +46,8 @@ else
 }
 
 $lastVer = '2.0';
-echo '<html><head><meta name="robots" content="noindex,nofollow"><title>myTinyTodo 2.0.1 Setup</title></head><body>';
-echo "<big><b>myTinyTodo 2.0.1 Setup</b></big><br><br>";
+echo '<html><head><meta name="robots" content="noindex,nofollow"><title>myTinyTodo 2.0.2 Setup</title></head><body>';
+echo "<big><b>myTinyTodo 2.0.2 Setup</b></big><br><br>";
 
 # determine current installed version
 $ver = get_ver($db, $dbtype);
