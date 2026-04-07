@@ -87,7 +87,12 @@ function fillData(array &$data, int $listId, string $field, string $sqlWhere )
             $a[] = $lang->get('taskdate_completed'). ": ". timestampToDatetime($r['d_completed']);
         }
         $r['title'] = htmlspecialchars( $r['title'] );
+        // !!! todo:
         $r['note'] = noteMarkup($r['note'], true);
+//        // !!! todo: opt_hard_wrap, opt_keep_blanks, opt_markup
+//        $r['opt_hard_wrap'] = $opt_hard_wrap;
+//        $r['opt_keep_blanks'] = $opt_keep_blanks;
+//        $r['opt_markup'] = $opt_markup;
         $r['_descr'] = implode("<br/>", htmlarray($a)). "<br/><br/>". $r['note'];
         $r['_title'] = "#". (int)$r['id']. ": ". $r['title'];
         $r['_d'] =  gmdate('r', $r[$field]);

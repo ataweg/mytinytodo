@@ -145,6 +145,10 @@ $().ready(function(){
 <form id="taskedit_form" name="edittask" method="post">
 <input type="hidden" name="isadd" value="0">
 <input type="hidden" name="id" value="">
+<!-- ToDo: add Options menu -->
+<input type="hidden" name="opt_markup" value="0" >
+<input type="hidden" name="opt_hard_wrap" value="1" >
+<input type="hidden" name="opt_keep_blanks" value="1" >
 
 <div class="form-container">
 <div class="form-row form-row-short">
@@ -159,6 +163,13 @@ $().ready(function(){
 <div class="form-row form-row-short">
   <span class="h"><?php _e('due');?> </span>
   <input name="duedate" id="duedate" value="" class="in100 form-input" title="Y-M-D, M/D/Y, D.M.Y, M/D, D.M" autocomplete="off" type="text">
+</div>
+<!-- ToDo: add Options menu -->
+<div class="form-row form-row-short">
+   <span id="noteoptbtn" class="mtt-menu-button">
+     <span class="h"><?php _e('Options');?> </span>
+     <span class="arrdown"></span>
+   </span>
 </div>
 <div class="form-row">
   <div class="h"><?php _e('task');?></div>
@@ -225,8 +236,8 @@ $().ready(function(){
   <form id="login_form">
     <div class="auth-content">
       <div class="h"><?php _e('password');?></div>
-      <div><input type="password" name="password" id="password" class="form-input"></div>
-    </div>
+       <div><input type="password" name="password" id="password" class="form-input"></div>
+     </div>
     <div class="form-bottom-buttons">
         <button type="submit"><?php _e('btn_login'); ?></button>
         <button type="button" class="mtt-back-button"><?php _e('cancel'); ?></button>
@@ -328,6 +339,18 @@ $().ready(function(){
 <ul>
   <li id="slmenu_list:-1" class="list-id--1 mtt-only-authorized"><div class="menu-icon"></div><a href="#alltasks"><?php _e('alltasks'); ?></a></li>
   <li class="mtt-menu-delimiter slmenu-lists-begin mtt-need-list"></li>
+</ul>
+</div>
+
+<!-- ToDo: add Options menu -->
+<div id="notemenucontainer" class="mtt-menu-container" style="display:none">
+<ul>
+ <li class="mtt-need-list mtt-need-real-list noteopt-item" id="textOptSimple"><div class="menu-icon"></div><?php _e('text_opt_simple');?> </li>
+ <li class="mtt-need-list noteopt-item" id="textOptMarkdown"><div class="menu-icon"></div><?php _e('text_opt_markdown');?> </li>
+ <li class="mtt-need-list noteopt-item" id="textOptHtml"><div class="menu-icon"></div><?php _e('text_opt_html');?> </li>
+ <li class="mtt-menu-delimiter"></li>
+ <li class="mtt-need-list" id="textHardWrap"><div class="menu-icon"></div><?php _e('text_hard_wrap');?></li>
+ <li class="mtt-need-list" id="textKeepBlanks"><div class="menu-icon"></div><?php _e('text_keep_blanks');?></li>
 </ul>
 </div>
 

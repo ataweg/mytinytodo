@@ -36,7 +36,8 @@ else {
 
 function printCSV(array $listData, array $data)
 {
-    $s = "\xEF\xBB\xBF". "Completed;Priority;Task;Notes;Tags;Due;DateCreated;DateCompleted\n";
+    // vvvv--- Changed 2024-11-02 AWe
+    $s = "\xEF\xBB\xBF". "Completed;Priority;Task;Notes;Tags;Due;DateCreated;DateCompleted;Markup;HardWrap;KeekBlanks\n";
     foreach($data as $r)
     {
         $s .= ($r['compl']?'1':'0'). ';'.
@@ -45,7 +46,11 @@ function printCSV(array $listData, array $data)
             escape_csv($r['tags'] ?? ''). ';'.
             $r['duedate']. ';'.
             date('Y-m-d H:i:s O',$r['d_created']). ';'.
-            ($r['d_completed'] ? date('Y-m-d H:i:s O',$r['d_completed']) :''). "\n";
+            ($r['d_completed'] ? date('Y-m-d H:i:s O',$r['d_completed']) :''). ';'.
+            $r['opt_markup']. ';'.         // Changed 2024-11-02 AWe
+            $r['opt_hard_wrap']. ';'.      //
+            $r['opt_keep_blanks'].         //
+            "\n";
     }
     header('Content-type: text/csv; charset=utf-8');
     header('Content-disposition: attachment; filename=list_'.(int)$listData['id'].'.csv');

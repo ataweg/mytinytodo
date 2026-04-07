@@ -110,6 +110,9 @@ MytinytodoAjaxApi.prototype = {
                 prio: params.prio,
                 tags: params.tags,
                 duedate: params.duedate,
+                opt_markup: params.opt_markup,
+                opt_hard_wrap: params.opt_hard_wrap,
+                opt_keep_blanks: params.opt_keep_blanks,
             }),
             success: callback,
             dataType: 'json'

@@ -376,6 +376,11 @@ function createMysqlTables(Database_Abstract $db)
     `note` TEXT,
     `prio` TINYINT NOT NULL default 0,          /* priority -,0,+ */
     `ow` INT NOT NULL default 0,                /* order weight */
+    `opt_markup` TINYINT UNSIGNED NOT NULL default 0,         /* 0..4 */     // Changed 2024-11-02 AWe
+    `opt_hard_wrap` TINYINT UNSIGNED NOT NULL default 0,      /* 0, 1 */     //
+    `opt_keep_blanks` TINYINT UNSIGNED NOT NULL default 0,    /* 0, 1 */     //
+    `tags` VARCHAR(600) NOT NULL default '',       /* for fast access to task tags */     // Changed 2024-11-02 AWe
+    `tags_ids` VARCHAR(250) NOT NULL default '',   /* no more than 22 tags (x11 chars) */ //
     `duedate` DATE default NULL,
     PRIMARY KEY(`id`),
     KEY(`list_id`),
@@ -527,6 +532,11 @@ function createSqliteTables(Database_Abstract $db)
     note TEXT COLLATE UTF8CI default NULL,
     prio TINYINT NOT NULL default 0,
     ow INTEGER NOT NULL default 0,
+    opt_markup TINYINT UNSIGNED NOT NULL default 0,         /* 0..4 */     // Changed 2024-11-02 AWe
+    opt_hard_wrap TINYINT UNSIGNED NOT NULL default 0,      /* 0, 1 */     //
+    opt_keep_blanks TINYINT UNSIGNED NOT NULL default 0,    /* 0, 1 */     //
+    tags VARCHAR(600) NOT NULL default '',        // Changed 2024-11-02 AWe
+    tags_ids VARCHAR(250) NOT NULL default '',    //
     duedate DATE default NULL
 ) ");
     $db->ex("CREATE INDEX todo_list_id ON {$db->prefix}todolist (list_id)");

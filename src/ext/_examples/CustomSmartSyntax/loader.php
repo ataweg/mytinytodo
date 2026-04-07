@@ -32,6 +32,9 @@ class CustomSmartSyntaxExtension extends MTTExtension implements MTTFilterInterf
             'title' => $title,   // string
             'tags' => '',        // string: "tag1, tag2, tag3,..."
             'duedate' => null,   // string: "Y-m-d" format
+            'opt_markup' =>  0,
+            'opt_hard_wrap' =>  0,
+            'opt_keep_blanks' =>  0,
         ];
 
         // This filter just overwrites results of default parser

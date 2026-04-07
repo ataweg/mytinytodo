@@ -30,6 +30,9 @@ class MTTSmartSyntax implements MTTSmartSyntaxInterface
             'title' => $title,
             'tags' => '',
             'duedate' => null,
+            'opt_markup' =>  0,
+            'opt_hard_wrap' =>  0,
+            'opt_keep_blanks' =>  0,
         ];
         // priority
         if ( preg_match("|^([-+]{1}\d+)(.+)|", $a['title'], $m) ) {

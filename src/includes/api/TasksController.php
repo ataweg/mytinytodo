@@ -6,6 +6,7 @@
     Licensed under the GNU GPL version 2 or any later. See file COPYRIGHT for details.
 */
 
+require_once(MTTINC. 'markup.php');
 require_once(MTTINC. 'smartsyntax.php');
 
 class TasksController extends ApiController {
@@ -252,6 +253,9 @@ class TasksController extends ApiController {
             'prio' => 0,
             'tags' => '',
             'duedate' => '',
+            'opt_markup' =>  0,
+            'opt_hard_wrap' =>  0,
+            'opt_keep_blanks' =>  0,
         );
         if (Config::get('smartsyntax') != 0 && (false !== $a = parseSmartSyntax($t['title'])))
         {
@@ -334,6 +338,9 @@ class TasksController extends ApiController {
         $t['total'] = 0;
         $title = trim($this->req->jsonBody['title'] ?? '');
         $prio = 0;
+        $opt_markup = 0;        // Changed 2024-11-02 AWe
+        $opt_hard_wrap = 1;     //
+        $opt_keep_blanks = 1;   //
         $tags = '';
         $duedate = null;
         if (Config::get('smartsyntax') != 0)
@@ -358,8 +365,10 @@ class TasksController extends ApiController {
         $ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=0");
         $date = time();
         $db->ex("BEGIN");
-        $db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,duedate) VALUES (?,?,?,?,?,?,?,?)",
-                    array(generateUUID(), $listId, $title, $date, $date, $ow, $prio, $duedate) );
+        // vvv--- Changed 2024-11-02 AWe
+        $db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,duedate, opt_markup,opt_hard_wrap,opt_keep_blanks)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                 array(generateUUID(), $listId, $title, $date, $date, $ow, $prio, $duedate, $opt_markup,$opt_hard_wrap,$opt_keep_blanks) );
         $id = (int) $db->lastInsertId();
         if ($tags != '')
         {
@@ -385,6 +394,9 @@ class TasksController extends ApiController {
         if ($prio < -1) $prio = -1;
         elseif ($prio > 2) $prio = 2;
         $duedate = MTTSmartSyntax::parseDuedate(trim( $this->req->jsonBody['duedate'] ?? '' ));
+        $opt_markup      = (int)($this->req->jsonBody['opt_markup'] ?? 0);
+        $opt_hard_wrap   = (int)($this->req->jsonBody['opt_hard_wrap'] ?? 0);
+        $opt_keep_blanks = (int)($this->req->jsonBody['opt_keep_blanks'] ?? 0);
         $t = array();
         $t['total'] = 0;
         if ($title == '') {
@@ -396,8 +408,10 @@ class TasksController extends ApiController {
         $ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=0");
         $date = time();
         $db->ex("BEGIN");
-        $db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,note,duedate) VALUES (?,?,?,?,?,?,?,?,?)",
-                    array(generateUUID(), $listId, $title, $date, $date, $ow, $prio, $note, $duedate) );
+        // vvv--- Changed 2024-11-02 AWe
+        $db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,note,duedate, opt_markup,opt_hard_wrap,opt_keep_blanks)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                 array(generateUUID(), $listId, $title, $date, $date, $ow, $prio, $note, $duedate, $opt_markup, $opt_hard_wrap, $opt_keep_blanks) );
         $id = (int) $db->lastInsertId();
         if ($tags != '')
         {
@@ -423,21 +437,28 @@ class TasksController extends ApiController {
         if ($prio < -1) $prio = -1;
         elseif ($prio > 2) $prio = 2;
         $duedate = MTTSmartSyntax::parseDuedate(trim( $this->req->jsonBody['duedate'] ?? '' ));
+        $opt_markup      = (int)($this->req->jsonBody['opt_markup'] ?? 0);
+        $opt_hard_wrap   = (int)($this->req->jsonBody['opt_hard_wrap'] ?? 0);
+        $opt_keep_blanks = (int)($this->req->jsonBody['opt_keep_blanks'] ?? 0);
         $t = array();
         $t['total'] = 0;
         if ($title == '') {
             return $t;
         }
-        $listId = (int) $db->sq("SELECT list_id FROM {$db->prefix}todolist WHERE id=$id");
+//      $listId = (int) $db->sq("SELECT list_id FROM {$db->prefix}todolist WHERE id=$id");
+        $listId = (int) $db->sq("SELECT list_id FROM {$db->prefix}todolist WHERE id=?", array($id));
         $tags = trim( $this->req->jsonBody['tags'] ?? '' );
         $db->ex("BEGIN");
-        $db->ex("DELETE FROM {$db->prefix}tag2task WHERE task_id=$id");
+//      $db->dq("DELETE FROM {$db->prefix}tag2task WHERE task_id=$id");
+        $db->dq("DELETE FROM {$db->prefix}tag2task WHERE task_id=?", array($id));
         $aTags = $this->prepareTags($tags);
         if ($aTags) {
             $this->addTaskTags($id, $aTags['ids'], $listId);
         }
-        $db->dq("UPDATE {$db->prefix}todolist SET title=?,note=?,prio=?,duedate=?,d_edited=? WHERE id=$id",
-                array($title, $note, $prio, $duedate, time()) );
+//        $db->dq("UPDATE {$db->prefix}todolist SET title=?,note=?,prio=?,duedate=?,d_edited=? WHERE id=$id",
+//                array($title, $note, $prio, $duedate, time()) );
+        $db->dq("UPDATE {$db->prefix}todolist SET title=?, note=?, prio=?, duedate=?, d_edited=?, opt_markup=?, opt_hard_wrap=?, opt_keep_blanks=? WHERE id=?",
+                array($title, $note, $prio, $duedate, time(), $opt_markup, $opt_hard_wrap, $opt_keep_blanks, $id));
         $db->ex("COMMIT");
         $task = $this->getTaskRowById($id, true);
         MTTNotificationCenter::postNotification(MTTNotification::didEditTask, ['task' => $task]);
@@ -490,7 +511,7 @@ class TasksController extends ApiController {
         $ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=? AND compl=?", array($listId, $r['compl']?1:0));
 
         $db->ex("BEGIN");
-        $db->ex("UPDATE {$db->prefix}tag2task SET list_id=? WHERE task_id=?", array($listId, $id));
+        $db->dq("UPDATE {$db->prefix}tag2task SET list_id=? WHERE task_id=?", array($listId, $id));
         $db->dq("UPDATE {$db->prefix}todolist SET list_id=?, ow=?, d_edited=? WHERE id=?", array($listId, $ow, time(), $id));
         $db->ex("COMMIT");
         return true;
@@ -520,7 +541,11 @@ class TasksController extends ApiController {
         $db = DBConnection::instance();
         $note = $this->req->jsonBody['note'] ?? '';
         $note = str_replace("\r\n", "\n", $note);
-        $db->dq("UPDATE {$db->prefix}todolist SET note=?,d_edited=? WHERE id=$id", array($note, time()) );
+        $opt_markup      = (int)($this->req->jsonBody['opt_markup'] ?? 0);
+        $opt_hard_wrap   = (int)($this->req->jsonBody['opt_hard_wrap'] ?? 0);
+        $opt_keep_blanks = (int)($this->req->jsonBody['opt_keep_blanks'] ?? 0);
+        $db->dq("UPDATE {$db->prefix}todolist SET note=?,d_edited=?, opt_markup=?, opt_hard_wrap=?,opt_keep_blanks=? WHERE id=?",
+            array($note, time(), $opt_markup, $opt_hard_wrap, $opt_keep_blanks, $id ) );
         if (MTTNotificationCenter::hasObserversForNotification(MTTNotification::didEditTask)) {
             $task = $this->getTaskRowById($id);
             MTTNotificationCenter::postNotification(MTTNotification::didEditTask, [
@@ -530,7 +555,10 @@ class TasksController extends ApiController {
         }
         $t = array();
         $t['total'] = 1;
-        $t['list'][] = array('id'=>$id, 'note'=> noteMarkup($note), 'noteText'=>(string)$note);
+        $t['list'][] = array( 'id' => $id, 'note' => convertText($note, (bool)$opt_markup,
+            (bool)$opt_hard_wrap, (bool)$opt_keep_blanks), 'noteText' => (string)$note,
+            'opt_markup' => $opt_markup, 'opt_hard_wrap' => $opt_hard_wrap,
+            'opt_keep_blanks' => $opt_keep_blanks);
         return $t;
     }
 
@@ -540,7 +568,7 @@ class TasksController extends ApiController {
         $prio = (int)($this->req->jsonBody['prio'] ?? 0);
         if ($prio < -1) $prio = -1;
         elseif ($prio > 2) $prio = 2;
-        $db->ex("UPDATE {$db->prefix}todolist SET prio=$prio,d_edited=? WHERE id=$id", array(time()) );
+        $db->dq("UPDATE {$db->prefix}todolist SET prio=$prio,d_edited=? WHERE id=$id", array(time()) );
         if (MTTNotificationCenter::hasObserversForNotification(MTTNotification::didEditTask)) {
             $task = $this->getTaskRowById($id);
             MTTNotificationCenter::postNotification(MTTNotification::didEditTask, [
@@ -590,7 +618,7 @@ class TasksController extends ApiController {
         }
         $db = DBConnection::instance();
         $db->ex("BEGIN");
-        $db->ex("DELETE FROM {$db->prefix}tag2task WHERE task_id=$id");
+        $db->dq("DELETE FROM {$db->prefix}tag2task WHERE task_id=$id");
         //TODO: delete unused tags?
         $db->dq("DELETE FROM {$db->prefix}todolist WHERE id=$id");
         $deleted = $db->affected();
@@ -632,6 +660,128 @@ class TasksController extends ApiController {
         return $this->prepareTaskRow($r);
     }
 
+    // vvvvvvvvvvvvvv   Changed 2026-04-04 AWe
+    function convertText( $note, $markup, $hard_wrap, $keep_blanks)
+    {
+        $makeClickable = function($text) {
+            $urlRegex = '/(https?:\/\/[^\s<]+)/i';
+            return preg_replace($urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>', $text);
+        };
+
+        switch ( $markup)
+        {
+            case 1:                             // Markdown
+               return markdownToHtml( $note );  // this is what we want
+
+            case 2:     // html
+                return $note;
+
+            case 0:     // Plain Text
+            default:
+                $note = $this->escapeTags($note);
+
+                if( $keep_blanks ) {
+                    $note = $this->convertBlanks( $note);
+                }
+
+                $note = $makeClickable($note);
+
+                if( $hard_wrap ) {
+                    $note = nl2br( $note);
+                }
+                return $note;
+        }
+    }
+
+    function convertBlanks( $note)
+    {
+        $found_blank = 0;
+        $found_cr = 0;
+        $ret = '';
+
+        for ($i = 0, $len = strlen($note); $i < $len; ++$i)
+        {
+            $o = ord($note[$i]);
+
+            if( ($o == 10 ) || ($o == 13) )
+            {
+                $ret .= $note[$i];
+                $found_blank = 0;    // discards previous blank
+                $found_cr = 1;
+                continue;
+            }
+
+            if( $found_cr == 1 )
+            {
+                $found_cr = 0;
+                if( $note[$i] == ' ' )
+                {
+                   $ret .= '&nbsp;';
+                   $found_blank = 1;
+                   continue;
+                }
+            }
+
+            if( $found_blank == 0)
+            {
+               $ret .= $note[$i];
+               if( $note[$i] == ' ' )
+                   $found_blank = 1;
+            }
+            else
+            {
+               if( $note[$i] == ' ' )
+                  $ret .= '&nbsp;';      //  the previous char was also a blank
+               else
+               {
+                  $ret .= $note[$i];
+                  $found_blank = 0;
+               }
+            }
+        }
+        return $ret;
+    }
+
+/*
+    function escapeTags($s)
+    {
+        $c1 = chr(1);
+        $c2 = chr(2);
+        $s = preg_replace("~<b>([\s\S]*?)</b>~i", "${c1}b${c2}\$1${c1}/b${c2}", $s);
+        $s = preg_replace("~<i>([\s\S]*?)</i>~i", "${c1}i${c2}\$1${c1}/i${c2}", $s);
+        $s = preg_replace("~<u>([\s\S]*?)</u>~i", "${c1}u${c2}\$1${c1}/u${c2}", $s);
+        $s = preg_replace("~<s>([\s\S]*?)</s>~i", "${c1}s${c2}\$1${c1}/s${c2}", $s);
+        $s = str_replace(array($c1, $c2), array('<','>'), htmlspecialchars($s));
+        return $s;
+    }
+*/
+
+function escapeTags($s) : string
+{
+    if ($s === null) return '';
+
+    // 1. Alles sicher maskieren
+    $s = htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
+
+    // 2. Nur die erlaubten Tags kontrolliert zurückverwandeln
+    $search = [
+        '&lt;b&gt;', '&lt;/b&gt;',
+        '&lt;i&gt;', '&lt;/i&gt;',
+        '&lt;u&gt;', '&lt;/u&gt;',
+        '&lt;s&gt;', '&lt;/s&gt;'
+    ];
+    $replace = [
+        '<b>', '</b>',
+        '<i>', '</i>',
+        '<u>', '</u>',
+        '<s>', '</s>'
+    ];
+
+    return str_ireplace($search, $replace, $s);
+}
+
+    //  ^^^^^^^^^^^^^
+
     private function prepareTaskRow(array $r): array
     {
         $lang = Lang::instance();
@@ -671,7 +821,11 @@ class TasksController extends ApiController {
             'dateCompletedInlineTitle' => htmlarray(sprintf($lang->get('taskdate_inline_completed'), $dCompleted)),
             'compl' => (int)$r['compl'],
             'prio' => $r['prio'],
-            'note' => noteMarkup($r['note']),
+            'opt_markup' => $r['opt_markup'],              // Changed 2024-11-02 AWe
+            'opt_hard_wrap' => $r['opt_hard_wrap'],        //
+            'opt_keep_blanks' => $r['opt_keep_blanks'],    //
+//            'note' => noteMarkup($r['note']),
+            'note' => $this->convertText( $r['note'], $r['opt_markup'], $r['opt_hard_wrap'], $r['opt_keep_blanks']),
             'noteText' => (string)$r['note'],
             'ow' => (int)$r['ow'],
             'tags' => htmlarray($r['tags'] ?? ''),
@@ -781,7 +935,7 @@ class TasksController extends ApiController {
         if ($tagId)
             return array('id'=>$tagId, 'name'=>$name);
 
-        $db->ex("INSERT INTO {$db->prefix}tags (name) VALUES (?)", array($name));
+        $db->dq("INSERT INTO {$db->prefix}tags (name) VALUES (?)", array($name));
         return array(
             'id' => $db->lastInsertId(),
             'name' => $name
@@ -813,13 +967,9 @@ class TasksController extends ApiController {
         $db = DBConnection::instance();
         if (!$tagIds) return;
         foreach ($tagIds as $tagId) {
-            $db->ex(
-                "INSERT INTO {$db->prefix}tag2task (task_id,tag_id,list_id) VALUES (?,?,?)",
+            $db->dq( "INSERT INTO {$db->prefix}tag2task (task_id,tag_id,list_id) VALUES (?,?,?)",
                 array($taskId, $tagId, $listId)
             );
         }
     }
-
-
-
 }
