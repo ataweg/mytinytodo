@@ -144,7 +144,7 @@ elseif(isset($_GET['newTask']))
 	if(Config::get('autotag')) $tags .= ','._post('tag');
 	$ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=0");
 	$db->ex("BEGIN");
-	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,duedate, d_markup,d_hard_wrap,d_keep_blanks) VALUES (?,?,?,?,?,?,?,?, ?,?,?)",
+	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,duedate, opt_markup,opt_hard_wrap,opt_keep_blanks) VALUES (?,?,?,?,?,?,?,?, ?,?,?)",
 				array(generateUUID(), $listId, $title, time(), time(), $ow, $prio, $duedate, $markup,$hard_wrap,$keep_blanks) );
 	$id = $db->last_insert_id();
 	if($tags != '')
@@ -184,7 +184,7 @@ elseif(isset($_GET['fullNewTask']))
 	if(Config::get('autotag')) $tags .= ','._post('tag');
 	$ow = 1 + (int)$db->sq("SELECT MAX(ow) FROM {$db->prefix}todolist WHERE list_id=$listId AND compl=0");
 	$db->ex("BEGIN");
-	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,note,duedate, d_markup,d_hard_wrap,d_keep_blanks) VALUES(?,?,?,?,?,?,?,?,?, ?,?,?)",
+	$db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,note,duedate, opt_markup,opt_hard_wrap,opt_keep_blanks) VALUES(?,?,?,?,?,?,?,?,?, ?,?,?)",
 				array(generateUUID(), $listId, $title, time(), time(), $ow, $prio, $note, $duedate, $markup, $hard_wrap, $keep_blanks) );
 	$id = $db->last_insert_id();
 	if($tags != '')
@@ -271,7 +271,7 @@ elseif(isset($_GET['editTask']))
 		$tags_ids = implode(',',$aTags['ids']);
 		addTaskTags($id, $aTags['ids'], $listId);
 	}
-	$db->dq("UPDATE {$db->prefix}todolist SET title=?,note=?,prio=?,tags=?,tags_ids=?,duedate=?,d_edited=?, d_markup=?,d_hard_wrap=?,d_keep_blanks=? WHERE id=$id",
+	$db->dq("UPDATE {$db->prefix}todolist SET title=?,note=?,prio=?,tags=?,tags_ids=?,duedate=?,d_edited=?, opt_markup=?,opt_hard_wrap=?,opt_keep_blanks=? WHERE id=$id",
 			array($title, $note, $prio, $tags, $tags_ids, $duedate, time(), $markup, $hard_wrap, $keep_blanks) );
 	$db->ex("COMMIT");
 	$r = $db->sqa("SELECT * FROM {$db->prefix}todolist WHERE id=$id");
@@ -669,10 +669,10 @@ function prepareTaskRow($r)
 		'dateCompletedInlineTitle' => htmlarray(sprintf($lang->get('taskdate_inline_completed'), $dCompleted)),
 		'compl' => (int)$r['compl'],
 		'prio' => $r['prio'],
-		'markup' => $r['d_markup'],
-		'hard_wrap' => $r['d_hard_wrap'],
-		'keep_blanks' => $r['d_keep_blanks'],
-		'note' => convertText( $r['note'], $r['d_markup'], $r['d_hard_wrap'], $r['d_keep_blanks']),
+		'markup' => $r['opt_markup'],
+		'hard_wrap' => $r['opt_hard_wrap'],
+		'keep_blanks' => $r['opt_keep_blanks'],
+		'note' => convertText( $r['note'], $r['opt_markup'], $r['opt_hard_wrap'], $r['opt_keep_blanks']),
 		'noteText' => (string)$r['note'],
 		'ow' => (int)$r['ow'],
 		'tags' => htmlarray($r['tags']),

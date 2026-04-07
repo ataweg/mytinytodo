@@ -122,9 +122,9 @@ if(!$ver)
  `title` VARCHAR(250) NOT NULL,
  `note` TEXT,
  `prio` TINYINT NOT NULL default 0,								/* priority -,0,+ */
- `d_markup` TINYINT UNSIGNED NOT NULL default 0,		/* 0..4 */
- `d_hard_wrap` TINYINT UNSIGNED NOT NULL default 0,		/* 0, 1 */
- `d_keep_blanks` TINYINT UNSIGNED NOT NULL default 0,		/* 0, 1 */
+ `opt_markup` TINYINT UNSIGNED NOT NULL default 0,		/* 0..4 */
+ `opt_hard_wrap` TINYINT UNSIGNED NOT NULL default 0,		/* 0, 1 */
+ `opt_keep_blanks` TINYINT UNSIGNED NOT NULL default 0,		/* 0, 1 */
  `ow` INT NOT NULL default 0,					/* order weight */
  `tags` VARCHAR(600) NOT NULL default '',			/* for fast access to task tags */
  `tags_ids` VARCHAR(250) NOT NULL default '',			/* no more than 22 tags (x11 chars) */
@@ -191,9 +191,9 @@ if(!$ver)
  title VARCHAR(250) NOT NULL,
  note TEXT,
  prio TINYINT NOT NULL default 0,				/* priority -,0,+ */
- d_markup TINYINT UNSIGNED NOT NULL default 0,			/* 0..4 */
- d_hard_wrap TINYINT UNSIGNED NOT NULL default 1,		/* 0, 1 */
- d_keep_blanks TINYINT UNSIGNED NOT NULL default 1,	/* 0, 1 */
+ opt_markup TINYINT UNSIGNED NOT NULL default 0,			/* 0..4 */
+ opt_hard_wrap TINYINT UNSIGNED NOT NULL default 1,		/* 0, 1 */
+ opt_keep_blanks TINYINT UNSIGNED NOT NULL default 1,	/* 0, 1 */
  ow INTEGER NOT NULL default 0,
  tags VARCHAR(600) NOT NULL default '',
  tags_ids VARCHAR(250) NOT NULL default '',
@@ -306,9 +306,9 @@ function get_ver($db, $dbtype)
 	}
 	$v = '1.4';
 	if($dbtype == 'mysql') {
-		if(!has_field_mysql($db, $db->prefix.'todolist', 'd_markup')) return $v;
+		if(!has_field_mysql($db, $db->prefix.'todolist', 'opt_markup')) return $v;
 	} else {
-		if(!has_field_sqlite($db, $db->prefix.'todolist', 'd_markup')) return $v;
+		if(!has_field_sqlite($db, $db->prefix.'todolist', 'opt_markup')) return $v;
 	}
 	$v = '2.0';
 	return $v;
@@ -796,15 +796,15 @@ function update_14_20($db, $dbtype)
 	$db->ex("BEGIN");
 	if($dbtype=='mysql')
 	{
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_markup` TINYINT UNSIGNED NOT NULL default 0");
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_hard_wrap` TINYINT UNSIGNED NOT NULL default 1");
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `d_keep_blanks` TINYINT UNSIGNED NOT NULL default 1");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `opt_markup` TINYINT UNSIGNED NOT NULL default 0");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `opt_hard_wrap` TINYINT UNSIGNED NOT NULL default 1");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD `opt_keep_blanks` TINYINT UNSIGNED NOT NULL default 1");
 	}
 	else
 	{
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_markup TINYINT UNSIGNED NOT NULL default 0");
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_hard_wrap TINYINT UNSIGNED NOT NULL default 1");
-		$db->ex("ALTER TABLE {$db->prefix}todolist ADD d_keep_blanks TINYINT UNSIGNED NOT NULL default 1");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD opt_markup TINYINT UNSIGNED NOT NULL default 0");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD opt_hard_wrap TINYINT UNSIGNED NOT NULL default 1");
+		$db->ex("ALTER TABLE {$db->prefix}todolist ADD opt_keep_blanks TINYINT UNSIGNED NOT NULL default 1");
 	}
 	$db->ex("COMMIT");
 

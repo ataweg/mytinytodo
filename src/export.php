@@ -78,9 +78,9 @@ function printCSV($listData, $data)
 			$seperator. date('d.m.Y H:i', $r['d_created']).	  /* 'Y-m-d H:i:s O' */
 			$seperator. date('d.m.Y H:i', $r['d_edited']).	   /* 'Y-m-d H:i:s O' */
 			$seperator. ($r['d_completed'] ? date('d.m.Y H:i', $r['d_completed']) : '').   /* 'Y-m-d H:i:s O' */
-			$seperator. $r['d_markup'].
-			$seperator. $r['d_hard_wrap'].
-			$seperator. $r['d_keep_blanks'].
+			$seperator. $r['opt_markup'].
+			$seperator. $r['opt_hard_wrap'].
+			$seperator. $r['opt_keep_blanks'].
 			$seperator. escape_csv( $n).
 			$seperator. "\n";
 		}
