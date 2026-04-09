@@ -5,9 +5,6 @@
     Licensed under the GNU GPL version 2 or any later. See file COPYRIGHT for details.
 */
 
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
 $checkDbExists = true;
 require_once('./init.php');
 

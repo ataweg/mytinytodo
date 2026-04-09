@@ -7,7 +7,7 @@
 */
 
 // Can be used to upgrade database from myTinyTodo v1.4 or later
-$lastVer = '1.8';
+$lastVer = '2.1';
 
 if (version_compare(PHP_VERSION, '7.2.0') < 0) {
     die("PHP 7.2 or above is required");
@@ -189,7 +189,7 @@ elseif ($ver == $lastVer)
 }
 else
 {
-    if (!in_array($ver, array('1.4','1.7'))) {
+    if (!in_array($ver, array('1.4','1.7', '1.8', '2.0'))) {
         exitMessage(htmlspecialchars("Can not update. Unsupported database version ($ver)."));
     }
 
@@ -207,9 +207,20 @@ else
     if ($ver == '1.4') {
         update_14_17($db, $dbtype);
         update_17_18($db, $dbtype);
+        update_18_20($db, $dbtype);
+        update_20_21($db, $dbtype);
     }
     elseif ($ver == '1.7') {
         update_17_18($db, $dbtype);
+        update_18_20($db, $dbtype);
+        update_20_21($db, $dbtype);
+    }
+    elseif ($ver == '1.8') {
+        update_18_20($db, $dbtype);
+        update_20_21($db, $dbtype);
+    }
+    elseif ($ver == '2.0') {
+        update_20_21($db, $dbtype);
     }
 }
 
@@ -379,6 +390,7 @@ function createMysqlTables(Database_Abstract $db)
     `opt_markup` TINYINT UNSIGNED NOT NULL default 0,         /* 0..4 */     // Changed 2024-11-02 AWe
     `opt_hard_wrap` TINYINT UNSIGNED NOT NULL default 0,      /* 0, 1 */     //
     `opt_keep_blanks` TINYINT UNSIGNED NOT NULL default 0,    /* 0, 1 */     //
+    `opt_fix_font` TINYINT UNSIGNED NOT NULL default 0,       /* 0, 1 */     //
     `tags` VARCHAR(600) NOT NULL default '',       /* for fast access to task tags */     // Changed 2024-11-02 AWe
     `tags_ids` VARCHAR(250) NOT NULL default '',   /* no more than 22 tags (x11 chars) */ //
     `duedate` DATE default NULL,
@@ -535,6 +547,7 @@ function createSqliteTables(Database_Abstract $db)
     opt_markup TINYINT UNSIGNED NOT NULL default 0,         /* 0..4 */     // Changed 2024-11-02 AWe
     opt_hard_wrap TINYINT UNSIGNED NOT NULL default 0,      /* 0, 1 */     //
     opt_keep_blanks TINYINT UNSIGNED NOT NULL default 0,    /* 0, 1 */     //
+    opt_fix_font TINYINT UNSIGNED NOT NULL default 0,       /* 0, 1 */     //
     tags VARCHAR(600) NOT NULL default '',        // Changed 2024-11-02 AWe
     tags_ids VARCHAR(250) NOT NULL default '',    //
     duedate DATE default NULL
@@ -602,6 +615,10 @@ function databaseVersion(Database_Abstract $db): string
     $v = '1.7';
     if ( $db->tableFieldExists($db->prefix.'todolist', 'tags') ) return $v;
     $v = '1.8';
+    if ( !$db->tableFieldExists($db->prefix.'todolist', 'opt_markup')) return $v;
+    $v = '2.0';
+    if ( !$db->tableFieldExists($db->prefix.'todolist', 'opt_fix_font')) return $v;
+    $v = '2.1';
     return $v;
 }
 
@@ -946,3 +963,43 @@ function update_17_18(Database_Abstract $db, $dbtype)
 
 }
 ### end of 1.8 #####
+
+### update v1.8 to v2.0 ##########
+function update_18_20(Database_Abstract $db, $dbtype)
+{
+    # update  db
+    $db->ex("BEGIN");
+    if($dbtype=='mysql')
+    {
+        $db->ex("ALTER TABLE {$db->prefix}todolist ADD `opt_markup` TINYINT UNSIGNED NOT NULL default 0");
+        $db->ex("ALTER TABLE {$db->prefix}todolist ADD `opt_hard_wrap` TINYINT UNSIGNED NOT NULL default 1");
+        $db->ex("ALTER TABLE {$db->prefix}todolist ADD `opt_keep_blanks` TINYINT UNSIGNED NOT NULL default 1");
+    }
+    else
+    {
+        $db->ex("ALTER TABLE {$db->prefix}todolist ADD opt_markup TINYINT UNSIGNED NOT NULL default 0");
+        $db->ex("ALTER TABLE {$db->prefix}todolist ADD opt_hard_wrap TINYINT UNSIGNED NOT NULL default 1");
+        $db->ex("ALTER TABLE {$db->prefix}todolist ADD opt_keep_blanks TINYINT UNSIGNED NOT NULL default 1");
+    }
+    $db->ex("COMMIT");
+
+}
+### end of 2.0 #####
+
+### update v2.0 to v2.1 ##########
+function update_20_21(Database_Abstract $db, $dbtype)
+{
+    # update  db
+    $db->ex("BEGIN");
+    if($dbtype=='mysql')
+    {
+        $db->ex("ALTER TABLE {$db->prefix}todolist ADD `opt_fix_font` TINYINT UNSIGNED NOT NULL default 1");
+    }
+    else
+    {
+        $db->ex("ALTER TABLE {$db->prefix}todolist ADD opt_fix_font TINYINT UNSIGNED NOT NULL default 1");
+    }
+    $db->ex("COMMIT");
+
+}
+### end of 2.1 #####

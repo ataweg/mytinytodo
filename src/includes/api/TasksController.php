@@ -256,6 +256,7 @@ class TasksController extends ApiController {
             'opt_markup' =>  0,
             'opt_hard_wrap' =>  0,
             'opt_keep_blanks' =>  0,
+            'opt_fix_font' =>  0,
         );
         if (Config::get('smartsyntax') != 0 && (false !== $a = parseSmartSyntax($t['title'])))
         {
@@ -341,6 +342,7 @@ class TasksController extends ApiController {
         $opt_markup = 0;        // Changed 2024-11-02 AWe
         $opt_hard_wrap = 1;     //
         $opt_keep_blanks = 1;   //
+        $opt_fix_font =  0;     //
         $tags = '';
         $duedate = null;
         if (Config::get('smartsyntax') != 0)
@@ -366,9 +368,9 @@ class TasksController extends ApiController {
         $date = time();
         $db->ex("BEGIN");
         // vvv--- Changed 2024-11-02 AWe
-        $db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,duedate, opt_markup,opt_hard_wrap,opt_keep_blanks)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?)",
-                 array(generateUUID(), $listId, $title, $date, $date, $ow, $prio, $duedate, $opt_markup,$opt_hard_wrap,$opt_keep_blanks) );
+        $db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,duedate, opt_markup,opt_hard_wrap,opt_keep_blanks, opt_fix_font)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                 array(generateUUID(), $listId, $title, $date, $date, $ow, $prio, $duedate, $opt_markup,$opt_hard_wrap,$opt_keep_blanks,$opt_fix_font) );
         $id = (int) $db->lastInsertId();
         if ($tags != '')
         {
@@ -397,6 +399,7 @@ class TasksController extends ApiController {
         $opt_markup      = (int)($this->req->jsonBody['opt_markup'] ?? 0);
         $opt_hard_wrap   = (int)($this->req->jsonBody['opt_hard_wrap'] ?? 0);
         $opt_keep_blanks = (int)($this->req->jsonBody['opt_keep_blanks'] ?? 0);
+        $opt_fix_font    = (int)($this->req->jsonBody['opt_fix_font'] ?? 0);
         $t = array();
         $t['total'] = 0;
         if ($title == '') {
@@ -409,9 +412,9 @@ class TasksController extends ApiController {
         $date = time();
         $db->ex("BEGIN");
         // vvv--- Changed 2024-11-02 AWe
-        $db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,note,duedate, opt_markup,opt_hard_wrap,opt_keep_blanks)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                 array(generateUUID(), $listId, $title, $date, $date, $ow, $prio, $note, $duedate, $opt_markup, $opt_hard_wrap, $opt_keep_blanks) );
+        $db->dq("INSERT INTO {$db->prefix}todolist (uuid,list_id,title,d_created,d_edited,ow,prio,note,duedate, opt_markup,opt_hard_wrap,opt_keep_blanks,opt_fix_font)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                 array(generateUUID(), $listId, $title, $date, $date, $ow, $prio, $note, $duedate, $opt_markup, $opt_hard_wrap, $opt_keep_blanks, $opt_fix_font) );
         $id = (int) $db->lastInsertId();
         if ($tags != '')
         {
@@ -440,25 +443,22 @@ class TasksController extends ApiController {
         $opt_markup      = (int)($this->req->jsonBody['opt_markup'] ?? 0);
         $opt_hard_wrap   = (int)($this->req->jsonBody['opt_hard_wrap'] ?? 0);
         $opt_keep_blanks = (int)($this->req->jsonBody['opt_keep_blanks'] ?? 0);
+        $opt_fix_font    = (int)($this->req->jsonBody['opt_fix_font'] ?? 0);
         $t = array();
         $t['total'] = 0;
         if ($title == '') {
             return $t;
         }
-//      $listId = (int) $db->sq("SELECT list_id FROM {$db->prefix}todolist WHERE id=$id");
         $listId = (int) $db->sq("SELECT list_id FROM {$db->prefix}todolist WHERE id=?", array($id));
         $tags = trim( $this->req->jsonBody['tags'] ?? '' );
         $db->ex("BEGIN");
-//      $db->dq("DELETE FROM {$db->prefix}tag2task WHERE task_id=$id");
         $db->dq("DELETE FROM {$db->prefix}tag2task WHERE task_id=?", array($id));
         $aTags = $this->prepareTags($tags);
         if ($aTags) {
             $this->addTaskTags($id, $aTags['ids'], $listId);
         }
-//        $db->dq("UPDATE {$db->prefix}todolist SET title=?,note=?,prio=?,duedate=?,d_edited=? WHERE id=$id",
-//                array($title, $note, $prio, $duedate, time()) );
-        $db->dq("UPDATE {$db->prefix}todolist SET title=?, note=?, prio=?, duedate=?, d_edited=?, opt_markup=?, opt_hard_wrap=?, opt_keep_blanks=? WHERE id=?",
-                array($title, $note, $prio, $duedate, time(), $opt_markup, $opt_hard_wrap, $opt_keep_blanks, $id));
+        $db->dq("UPDATE {$db->prefix}todolist SET title=?, note=?, prio=?, duedate=?, d_edited=?, opt_markup=?, opt_hard_wrap=?, opt_keep_blanks=?, opt_fix_font=? WHERE id=?",
+                array($title, $note, $prio, $duedate, time(), $opt_markup, $opt_hard_wrap, $opt_keep_blanks, $opt_fix_font, $id));
         $db->ex("COMMIT");
         $task = $this->getTaskRowById($id, true);
         MTTNotificationCenter::postNotification(MTTNotification::didEditTask, ['task' => $task]);
@@ -544,8 +544,9 @@ class TasksController extends ApiController {
         $opt_markup      = (int)($this->req->jsonBody['opt_markup'] ?? 0);
         $opt_hard_wrap   = (int)($this->req->jsonBody['opt_hard_wrap'] ?? 0);
         $opt_keep_blanks = (int)($this->req->jsonBody['opt_keep_blanks'] ?? 0);
-        $db->dq("UPDATE {$db->prefix}todolist SET note=?,d_edited=?, opt_markup=?, opt_hard_wrap=?,opt_keep_blanks=? WHERE id=?",
-            array($note, time(), $opt_markup, $opt_hard_wrap, $opt_keep_blanks, $id ) );
+        $opt_fix_font = (int)($this->req->jsonBody['opt_fix_font'] ?? 0);
+        $db->dq("UPDATE {$db->prefix}todolist SET note=?,d_edited=?, opt_markup=?, opt_hard_wrap=?, opt_keep_blanks=?, opt_fix_font=? WHERE id=?",
+            array($note, time(), $opt_markup, $opt_hard_wrap, $opt_keep_blanks, $opt_fix_font, $id ) );
         if (MTTNotificationCenter::hasObserversForNotification(MTTNotification::didEditTask)) {
             $task = $this->getTaskRowById($id);
             MTTNotificationCenter::postNotification(MTTNotification::didEditTask, [
@@ -558,7 +559,7 @@ class TasksController extends ApiController {
         $t['list'][] = array( 'id' => $id, 'note' => convertText($note, (bool)$opt_markup,
             (bool)$opt_hard_wrap, (bool)$opt_keep_blanks), 'noteText' => (string)$note,
             'opt_markup' => $opt_markup, 'opt_hard_wrap' => $opt_hard_wrap,
-            'opt_keep_blanks' => $opt_keep_blanks);
+            'opt_keep_blanks' => $opt_keep_blanks, 'opt_fix_font' => $opt_fix_font );
         return $t;
     }
 
@@ -780,7 +781,7 @@ function escapeTags($s) : string
     return str_ireplace($search, $replace, $s);
 }
 
-    //  ^^^^^^^^^^^^^
+    // ^^^^^^^^^^^^^^
 
     private function prepareTaskRow(array $r): array
     {
@@ -824,6 +825,7 @@ function escapeTags($s) : string
             'opt_markup' => $r['opt_markup'],              // Changed 2024-11-02 AWe
             'opt_hard_wrap' => $r['opt_hard_wrap'],        //
             'opt_keep_blanks' => $r['opt_keep_blanks'],    //
+            'opt_fix_font' => $r['opt_fix_font'],
 //            'note' => noteMarkup($r['note']),
             'note' => $this->convertText( $r['note'], $r['opt_markup'], $r['opt_hard_wrap'], $r['opt_keep_blanks']),
             'noteText' => (string)$r['note'],

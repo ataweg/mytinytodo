@@ -206,7 +206,7 @@ class Database_Mysql extends Database_Abstract
         $table = str_replace('`', '\\`', addslashes($table));
         $q = $this->dq("DESCRIBE `$table`");
         while ($r = $q->fetchRow()) {
-            if ($r[0] == $field) return true;
+            if ($r[0] == $field)  return true;
         }
         return false;
     }

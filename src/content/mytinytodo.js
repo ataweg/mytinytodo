@@ -434,7 +434,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
         $('#optionpopup').mouseleave(function(){
             $(this).hide()}
         );
-//  ^^^^^^^^^^^^^
+// ^^^^^^^^^^^^^^
 
 
         // edit form handlers
@@ -476,10 +476,29 @@ var mytinytodo = window.mytinytodo = _mtt = {
 
 // vvvvvvvvvvvvvv   Changed 2024-11-02 AWe
         $('#noteoptbtn').click(function(){
-           if(!_mtt.menus.noteopt) _mtt.menus.noteopt = new mttMenu('notemenucontainer', {onclick:noteoptMenuClick} );
+           if(!_mtt.menus.noteopt)
+           {
+               _mtt.menus.noteopt = new mttMenu('notemenucontainer', {onclick:noteoptMenuClick} );
+           }
+
+           // --- Start: Fix Font Status aktualisieren ---
+           let form = document.getElementById('taskedit_form');
+           let isPlainText = (form.opt_markup.value == 0);
+
+           if (isPlainText) {
+              $('#textFixFont').removeClass('mtt-item-disabled');
+              // Haken nur zeigen, wenn auch wirklich aktiviert
+              if (form.opt_fix_font.value != 0) $('#textFixFont').addClass('mtt-item-checked');
+              else $('#textFixFont').removeClass('mtt-item-checked');
+           } else {
+              // Deaktivieren und Haken weg, wenn kein Plain Text
+              $('#textFixFont').addClass('mtt-item-disabled').removeClass('mtt-item-checked');
+           }
+           // --- Ende ---
+
            _mtt.menus.noteopt.show(this);
         });
-//  ^^^^^^^^^^^^^
+// ^^^^^^^^^^^^^
 
         function ac_split( val ) {
             return val.split( /,\s*/ );
@@ -604,7 +623,7 @@ var mytinytodo = window.mytinytodo = _mtt = {
                 if(event.type == 'mouseover') optionPopup(1, this, id);
                 else optionPopup(0, this);
             });
-//  ^^^^^^^^^^^^^
+// ^^^^^^^^^^^^^
         }
 
         $('#tasklist').on('click', '.mtt-action-note-cancel', function(){
@@ -1309,9 +1328,12 @@ _mtt.prepareTaskStr = prepareTaskStr;
 function prepareTaskBlocks(item)
 {
     const id = item.id;
-    // !!! todo: opt_markup
     let markdown = '';
     if (_mtt.options.markdown == true) markdown = 'markdown-note';
+
+//  const fixFont = parseInt(item.opt_fix_font, 10) !== 0;
+    const fixFont = (parseInt(item.opt_fix_font, 10) !== 0 && parseInt(item.opt_markup, 10) === 0);
+
     return '' +
         '<div class="task-block">' +
             '<div class="task-left">' +
@@ -1336,7 +1358,11 @@ function prepareTaskBlocks(item)
         '</div>' +
 
         '<div class="task-note-block">' +
-            '<div id="tasknote' + id + '" class="task-note ' + markdown + '">' + prepareTaskNoteInlineHtml(item.note, item.noteText) + '</div>' +
+            '<div id="tasknote' + id + '" class="task-note ' + markdown +  ' ' +
+                (fixFont ? 'mtt-note-fix-font' : '') + '">' +
+                (fixFont ? item.noteText : prepareTaskNoteInlineHtml(item.note, item.noteText)) +
+            '</div>' +
+
             '<div id="tasknotearea'+id+'" class="task-note-area"><textarea id="notetext'+id+'"></textarea>'+
                 '<span class="task-note-actions"><a href="#" class="mtt-action-note-save">'+_mtt.lang.get('actionNoteSave') +
                     '</a> | <a href="#" class="mtt-action-note-cancel">'+_mtt.lang.get('actionNoteCancel')+'</a></span>' +
@@ -1625,7 +1651,7 @@ function setTaskOption(id, option)
     if (curList.sort != 0 && curList.sort != 100) changeTaskOrder(id);
     $t.effect("highlight", {color:_mtt.theme.editTaskFlashColor}, 'normal');
 };
-//  ^^^^^^^^^^^^^
+// ^^^^^^^^^^^^^^
 
 function setSort(v, init)
 {
@@ -1959,6 +1985,14 @@ function viewTask(id)
     updateHistoryState({ task: item.id, list: item.listId }, '#task/'+item.id, dehtml(item.title) + ' - ' + dehtml(curList.name) + ' - ' + _mtt.options.title);
 }
 
+function applyFixFontState(form)
+{
+    const fix = parseInt(form.opt_fix_font.value, 10) !== 0;
+    const $textarea = $(form.note);
+
+    $('#textFixFont').toggleClass('mtt-item-checked', fix);
+    $textarea.toggleClass('mtt-note-fix-font', fix);
+}
 
 function editTask(id)
 {
@@ -1977,7 +2011,10 @@ function editTask(id)
     form.opt_markup.value = item.opt_markup;
     form.opt_hard_wrap.value = item.opt_hard_wrap;
     form.opt_keep_blanks.value = item.opt_keep_blanks;
-//  ^^^^^^^^^^^^^
+// ^^^^^^^^^^^^^^
+// vvvvvvvvvvvvvv   Changed 2026-04-07 AWe
+   form.opt_fix_font.value = item.opt_fix_font;
+// ^^^^^^^^^^^^^^
 
     $('#taskedit_id').text('#' + item.id);
     $('#taskedit_info .date-created-value').text(item.date).attr('title', item.dateFull);;
@@ -2004,7 +2041,13 @@ function editTask(id)
 
     if(form.opt_keep_blanks.value != 0) $('#textKeepBlanks').addClass('mtt-item-checked');
     else $('#textKeepBlanks').removeClass('mtt-item-checked');
-//  ^^^^^^^^^^^^^
+// ^^^^^^^^^^^^^^
+// vvvvvvvvvvvvvv   Changed 2026-04-07 AWe 2
+    if(form.opt_fix_font.value != 0) $('#textFixFont').addClass('mtt-item-checked');
+    else $('#textFixFont').removeClass('mtt-item-checked');
+
+//   applyFixFontState(form);  // no effect
+// ^^^^^^^^^^^^^^
 
     toggleEditAllTags(0);
     showEditForm();
@@ -2024,7 +2067,10 @@ function clearEditForm()
     form.opt_markup.value = '0';
     form.opt_hard_wrap.value = '1';
     form.opt_keep_blanks.value = '1';
-//  ^^^^^^^^^^^^^
+// ^^^^^^^^^^^^^^
+// vvvvvvvvvvvvvv   Changed 2026-04-07 AWe
+   form.opt_fix_font.value = 1;
+// ^^^^^^^^^^^^^^
 
     form.id.value = '';
     toggleEditAllTags(0);
@@ -2033,6 +2079,8 @@ function clearEditForm()
 function showEditForm(isAdd)
 {
     let form = document.getElementById('taskedit_form');
+    let $textarea = $(form.note); // Referenz auf die Textarea im Editor
+
     if (isAdd)
     {
         clearEditForm();
@@ -2043,23 +2091,27 @@ function showEditForm(isAdd)
         {
             _mtt.db.request('parseTaskStr', { list:curList.id, title:$('#task').val(), tag:_mtt.filter.getTags() }, function(json){
                 if(!json) return;
-                form.task.value = json.title
+                form.task.value = json.title;
                 form.tags.value = (form.tags.value != '') ? form.tags.value +', '+ json.tags : json.tags;
                 form.prio.value = json.prio;
 // vvvvvvvvvvvvvv   Changed 2024-11-02 AWe
                 form.opt_markup.value = json.opt_markup;
                 form.opt_hard_wrap.value = json.opt_hard_wrap;
                 form.opt_keep_blanks.value = json.opt_keep_blanks;
+// ^^^^^^^^^^^^^^
+// vvvvvvvvvvvvvv   Changed 2026-04-07 AWe
+                form.opt_fix_font.value = json.opt_fix_font || 0;
+//                applyFixFontState(form); // no effect
+// ^^^^^^^^^^^^^^
                 form.duedate.value = json.duedate;
                 $('#task').val('');
-//  ^^^^^^^^^^^^^
-
             });
         }
     }
     else {
         $('#page_taskedit').removeClass('mtt-inadd').addClass('mtt-inedit');
         form.isadd.value = 0;
+        applyFixFontState(form);
     }
     $(document).on('keydown.mttback', function(event) {
         if (event.keyCode == 27) { //Esc pressed
@@ -2089,8 +2141,11 @@ function saveTask(form)
         prio:form.prio.value, tags:form.tags.value, duedate:duedate,
         opt_markup:form.opt_markup.value,
         opt_hard_wrap:form.opt_hard_wrap.value,
-        opt_keep_blanks:form.opt_keep_blanks.value},
-//  ^^^^^^^^^^^^^
+        opt_keep_blanks:form.opt_keep_blanks.value,
+// ^^^^^^^^^^^^^^
+// vvvvvvvvvvvvvv   Changed 2026-04-07 AWe
+       opt_fix_font:form.opt_fix_font.value},
+// ^^^^^^^^^^^^^^
 
         function(json) {
             if (!parseInt(json.total))
@@ -2277,8 +2332,11 @@ function submitFullTask(form)
 // vvvvvvvvvvvvvv   Changed 2024-11-02 AWe
             opt_markup:form.opt_markup.value,
             opt_hard_wrap:form.opt_hard_wrap.value,
-            opt_keep_blanks:form.opt_keep_blanks.value
-//  ^^^^^^^^^^^^^
+            opt_keep_blanks:form.opt_keep_blanks.value,
+// ^^^^^^^^^^^^^^
+// vvvvvvvvvvvvvv   Changed 2026-04-07 AWe
+            opt_fix_font:form.opt_fix_font.value,
+// ^^^^^^^^^^^^^^
         },
         function(json) {
             if (!parseInt(json.total)) return;
@@ -2807,6 +2865,12 @@ function noteoptMenuClick(el, menu)
       case 'textOptHtml':           return setMarkup( 2);
       case 'textHardWrap':          return toggleHardWrap();
       case 'textKeepBlanks':        return toggleKeepBlank();
+      case 'textFixFont':
+         // Nur toggeln, wenn Markup auf 0 (Simple/Plain Text) steht
+         if (document.getElementById('taskedit_form').opt_markup.value == 0) {
+            return toggleFixFont();
+         }
+         return false; // Verhindert Aktion bei ausgegrautem Punkt
    }
 };
 
@@ -2815,11 +2879,30 @@ function setMarkup( v)
    var form = document.getElementById('taskedit_form');
    form.opt_markup.value = v;
 
-   $('#notemenucontainer .noteopt-item').removeClass('mtt-item-checked');
-   if(v==0)      $('#textOptSimple').addClass('mtt-item-checked');
-   else if(v==1) $('#textOptMarkdown').addClass('mtt-item-checked');
-   else if(v==2) $('#textOptHtml').addClass('mtt-item-checked');
-   else return;
+    // Wenn val != 0 (also kein Plain Text), deaktiviere Fix Font
+    $('#notemenucontainer .noteopt-item').removeClass('mtt-item-checked');
+    if(v==0)
+    {
+        // Menüpunkt wieder aktivieren
+        $('#textOptSimple').addClass('mtt-item-checked');
+        $('#textFixFont').removeClass('mtt-item-disabled');
+
+//        // Falls Fix Font in der Datenbank/Formular noch auf 1 steht, Haken wieder zeigen
+//        if (document.getElementById('taskedit_form').opt_fix_font.value != 0) {
+//             $('#textFixFont').addClass('mtt-item-checked');
+//        }
+    }
+    else
+    {
+        // 1. Menuepunkt ausgrauen
+        $('#textFixFont').addClass('mtt-item-disabled');
+        // 2. Den Haken visuell entfernen
+        $('#textFixFont').removeClass('mtt-item-checked');
+
+        if(v==1)      $('#textOptMarkdown').addClass('mtt-item-checked');
+        else if(v==2) $('#textOptHtml').addClass('mtt-item-checked');
+        else return;
+    }
 };
 
 function toggleHardWrap()
@@ -2843,7 +2926,18 @@ function toggleKeepBlank()
 
    form.opt_keep_blanks.value = act;
 };
-//  ^^^^^^^^^^^^^
+// ^^^^^^^^^^^^^^
+// vvvvvvvvvvvvvv   Changed 2026-04-07 AWe
+function toggleFixFont()
+{
+   var form = document.getElementById('taskedit_form');
+
+   var act = parseInt(form.opt_fix_font.value, 10) !== 0 ? 0 : 1;
+   form.opt_fix_font.value = act;
+
+   applyFixFontState(form);
+}
+// ^^^^^^^^^^^^^^
 
 function showhide(a,b)
 {

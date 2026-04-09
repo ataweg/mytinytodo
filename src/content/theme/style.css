@@ -1529,3 +1529,25 @@ li.mtt-item-hidden { display:none; }
   }
 
 } /* end of @media min 600px */
+
+.mtt-note-fix-font {
+    font-family: "Courier New", Courier, monospace !important;
+/*
+    font-family: ui-monospace,Consolas,"SF Mono",Menlo,"Liberation Mono",monospace;
+*/
+    white-space: pre-wrap !important;
+    font-size: 13px;
+    line-height: 1.2;
+}
+
+/* Verhindert doppelte Abstaende, falls PHP/JS <br> einfaengt * /
+.mtt-note-fix-font br {
+    display: none;
+}
+*/
+
+.mtt-menu-item.mtt-item-disabled {
+    color: #ccc !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}

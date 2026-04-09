@@ -50,6 +50,7 @@ function printCSV(array $listData, array $data)
             $r['opt_markup']. ';'.         // Changed 2024-11-02 AWe
             $r['opt_hard_wrap']. ';'.      //
             $r['opt_keep_blanks'].         //
+            $r['opt_fix_font'].            //
             "\n";
     }
     header('Content-type: text/csv; charset=utf-8');

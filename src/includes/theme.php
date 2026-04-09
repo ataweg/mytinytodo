@@ -149,6 +149,7 @@ $().ready(function(){
 <input type="hidden" name="opt_markup" value="0" >
 <input type="hidden" name="opt_hard_wrap" value="1" >
 <input type="hidden" name="opt_keep_blanks" value="1" >
+<input type="hidden" name="opt_fix_font" value="1" >
 
 <div class="form-container">
 <div class="form-row form-row-short">
@@ -351,6 +352,7 @@ $().ready(function(){
  <li class="mtt-menu-delimiter"></li>
  <li class="mtt-need-list" id="textHardWrap"><div class="menu-icon"></div><?php _e('text_hard_wrap');?></li>
  <li class="mtt-need-list" id="textKeepBlanks"><div class="menu-icon"></div><?php _e('text_keep_blanks');?></li>
+ <li class="mtt-need-list" id="textFixFont"><div class="menu-icon"></div><?php _e('text_fix_font');?></li>
 </ul>
 </div>
 

@@ -113,6 +113,7 @@ MytinytodoAjaxApi.prototype = {
                 opt_markup: params.opt_markup,
                 opt_hard_wrap: params.opt_hard_wrap,
                 opt_keep_blanks: params.opt_keep_blanks,
+                opt_fix_font: params.opt_fix_font,
             }),
             success: callback,
             dataType: 'json'

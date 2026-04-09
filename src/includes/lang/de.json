@@ -163,6 +163,7 @@
     "text_opt_simple": "Einfacher Text",
     "text_hard_wrap": "Fester Zeilenumbruch",
     "text_keep_blanks": "Leerzeichen beibeahlten",
+    "text_fix_font": "Fix font",
     "csv_seperator": ";",
 
     "set_header": "Einstellungen",

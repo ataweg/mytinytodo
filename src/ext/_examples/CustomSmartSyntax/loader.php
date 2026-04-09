@@ -35,6 +35,7 @@ class CustomSmartSyntaxExtension extends MTTExtension implements MTTFilterInterf
             'opt_markup' =>  0,
             'opt_hard_wrap' =>  0,
             'opt_keep_blanks' =>  0,
+            'opt_fix_font' =>  0,
         ];
 
         // This filter just overwrites results of default parser

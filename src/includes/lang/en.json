@@ -165,6 +165,7 @@
     "text_opt_simple": "Plain text",
     "text_hard_wrap": "Hard line break",
     "text_keep_blanks": "Keep spaces",
+    "text_fix_font": "Fix font",
     "csv_seperator": ";",
 
     "set_header": "Settings",
